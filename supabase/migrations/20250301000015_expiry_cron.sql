@@ -1,0 +1,10 @@
+-- Requires pg_cron extension (Supabase Pro)
+-- If on free plan, expiry is primarily handled by check-on-read in Edge Functions.
+-- Manual setup may be required in the Supabase dashboard.
+--
+-- SELECT cron.schedule('expire-attempts', '* * * * *',
+--   $$UPDATE attempts
+--       SET status = 'expired', expired_at = now()
+--       WHERE status IN ('started', 'in_progress')
+--         AND expires_at < now() - INTERVAL '5 seconds'$$
+-- );

@@ -1,0 +1,2677 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindMosaic — Final Production Spec v4.0</title>
+  <style>
+    /* ═══════ RESET & BASE ═══════ */
+    :root {
+      --bg: #fafbfc;
+      --surface: #ffffff;
+      --surface-alt: #f6f8fa;
+      --text: #1a1d21;
+      --text-secondary: #57606a;
+      --text-muted: #8b949e;
+      --border: #d0d7de;
+      --border-light: #e8ecf0;
+      --accent: #0969da;
+      --accent-bg: #ddf4ff;
+      --accent-dark: #0550ae;
+      --green: #1a7f37;
+      --green-bg: #dafbe1;
+      --amber: #9a6700;
+      --amber-bg: #fff8c5;
+      --red: #cf222e;
+      --red-bg: #ffebe9;
+      --purple: #8250df;
+      --purple-bg: #fbefff;
+      --code-bg: #f6f8fa;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════ LAYOUT ═══════ */
+    .page { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* ═══════ HEADER ═══════ */
+    .doc-header {
+      padding: 40px 0 32px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 32px;
+    }
+    .doc-header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .doc-header .subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin: 0 0 16px;
+    }
+    .doc-meta {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      font-size: 13px; color: var(--text-muted);
+    }
+    .doc-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* ═══════ TABLE OF CONTENTS ═══════ */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+    }
+    .toc h2 {
+      margin: 0 0 16px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0;
+    }
+    .toc-group { margin-bottom: 16px; }
+    .toc-group-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+    .toc-group a {
+      display: block;
+      padding: 3px 0;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .toc-group a:hover { text-decoration: underline; }
+    .toc-group a .num { color: var(--text-muted); font-size: 12px; min-width: 24px; display: inline-block; }
+
+    /* ═══════ SECTIONS ═══════ */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--surface-alt);
+      cursor: pointer;
+      user-select: none;
+    }
+    .section-head:hover { background: #f0f3f6; }
+    .section-head h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .num-spec { background: var(--accent-bg); color: var(--accent); }
+    .num-impl { background: var(--green-bg); color: var(--green); }
+    .num-placeholder { background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
+    .section-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-spec { background: var(--accent-bg); color: var(--accent); }
+    .badge-impl { background: var(--green-bg); color: var(--green); }
+    .badge-placeholder { background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .section-body {
+      padding: 20px;
+    }
+    .section-body[contenteditable="true"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    /* ═══════ TYPOGRAPHY IN SECTIONS ═══════ */
+    .section-body h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 24px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text);
+    }
+    .section-body h3:first-child { margin-top: 0; }
+    .section-body h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 16px 0 6px;
+      color: var(--text-secondary);
+    }
+    .section-body p {
+      margin: 8px 0;
+      line-height: 1.65;
+    }
+    .section-body ul, .section-body ol {
+      margin: 6px 0 6px 20px;
+      padding: 0;
+    }
+    .section-body li {
+      margin: 4px 0;
+      line-height: 1.55;
+    }
+    .section-body li > ul { margin-top: 4px; }
+
+    /* ═══════ CODE BLOCKS ═══════ */
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-light);
+    }
+    pre {
+      background: #24292f;
+      color: #e6edf3;
+      padding: 16px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 12px 0;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      border: none;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ═══════ TABLES ═══════ */
+    .section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    .section-body th {
+      background: var(--surface-alt);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .section-body td {
+      padding: 8px 12px;
+      border: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    .section-body tr:hover td { background: #f8fafc; }
+
+    /* ═══════ CALLOUT BOXES ═══════ */
+    .callout {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.55;
+      border-left: 4px solid;
+    }
+    .callout-info { background: var(--accent-bg); border-color: var(--accent); }
+    .callout-warn { background: var(--amber-bg); border-color: var(--amber); }
+    .callout-danger { background: var(--red-bg); border-color: var(--red); }
+    .callout-success { background: var(--green-bg); border-color: var(--green); }
+    .callout-purple { background: var(--purple-bg); border-color: var(--purple); }
+    .callout strong { font-weight: 600; }
+
+    /* ═══════ STEP CARDS (Implementation) ═══════ */
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border-light);
+      gap: 12px;
+    }
+    .step-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-title .step-num {
+      background: var(--green);
+      color: white;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .step-effort {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .step-body { padding: 16px; }
+    .step-body h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin: 16px 0 6px;
+      font-weight: 600;
+    }
+    .step-body h4:first-child { margin-top: 0; }
+    .step-deps {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* ═══════ PHASE HEADERS ═══════ */
+    .phase-banner {
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .phase-active {
+      background: linear-gradient(135deg, #dafbe1 0%, #ddf4ff 100%);
+      border: 1px solid #a7f3d0;
+    }
+    .phase-future {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      opacity: 0.7;
+    }
+    .phase-banner h3 { margin: 0; font-size: 18px; }
+    .phase-banner .phase-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ═══════ UTILITIES ═══════ */
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .tag-critical { background: var(--red-bg); color: var(--red); }
+    .tag-high { background: var(--amber-bg); color: var(--amber); }
+    .tag-medium { background: var(--accent-bg); color: var(--accent); }
+    .tag-low { background: var(--green-bg); color: var(--green); }
+    .tag-phase { background: var(--purple-bg); color: var(--purple); }
+    .muted { color: var(--text-muted); font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ═══════ FOOTER ═══════ */
+    .doc-footer {
+      margin-top: 40px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ═══════ COLLAPSIBLE ═══════ */
+    .section-body.collapsed { display: none; }
+    .chevron {
+      transition: transform 0.2s;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .chevron.open { transform: rotate(90deg); }
+
+    /* ═══════ PRINT ═══════ */
+    @media print {
+      body { background: white; font-size: 12px; }
+      .section { break-inside: avoid; box-shadow: none; }
+      .toc { break-after: page; }
+      pre { white-space: pre-wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- DOCUMENT HEADER                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="doc-header">
+    <h1>MindMosaic — Production Spec &amp; Implementation Plan</h1>
+    <p class="subtitle">Online NAPLAN-style practice assessment platform for Australian students (Years 3, 5, 7, 9)</p>
+    <div class="doc-meta">
+      <span>📄 Version 4.0 — Final</span>
+      <span>📅 March 2026</span>
+      <span>🔒 Audit-remediated (12/12 findings resolved)</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- TABLE OF CONTENTS                       -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <div class="toc-group">
+        <p class="toc-group-title">Part A — System Specification</p>
+        <a href="#s1"><span class="num">1</span> System Overview</a>
+        <a href="#s2"><span class="num">2</span> Tech Stack</a>
+        <a href="#s3"><span class="num">3</span> Non-Negotiable Constraints</a>
+        <a href="#s4"><span class="num">4</span> Exam Lifecycle (State Machine)</a>
+        <a href="#s5"><span class="num">5</span> Timer &amp; Expiry Enforcement</a>
+        <a href="#s6"><span class="num">6</span> Anti-Cheat Controls</a>
+        <a href="#s7"><span class="num">7</span> Writing Module</a>
+        <a href="#s8"><span class="num">8</span> Content Selection &amp; Snapshots</a>
+        <a href="#s9"><span class="num">9</span> Guest Mode</a>
+        <a href="#s10"><span class="num">10</span> Edge Functions &amp; API</a>
+        <a href="#s11"><span class="num">11</span> Question Types</a>
+        <a href="#s12"><span class="num">12</span> Scoring &amp; Results Pipeline</a>
+        <a href="#s13"><span class="num">13</span> Adaptive Routing</a>
+      </div>
+      <div class="toc-group">
+        <p class="toc-group-title">Part B — Data &amp; Operations</p>
+        <a href="#s14"><span class="num">14</span> Database Schema</a>
+        <a href="#s15"><span class="num">15</span> Scalability &amp; Ingestion</a>
+        <a href="#s16"><span class="num">16</span> Telemetry, Audit &amp; Alerting</a>
+        <a href="#s17"><span class="num">17</span> Error Taxonomy</a>
+        <a href="#s18"><span class="num">18</span> Feature Flags &amp; Kill Switches</a>
+      </div>
+      <div class="toc-group">
+        <p class="toc-group-title">Part C — Implementation</p>
+        <a href="#s19"><span class="num">19</span> Phase 1: Exam Engine (Full Detail)</a>
+        <a href="#s20"><span class="num">20</span> Phase 2–5: Placeholders</a>
+        <a href="#s21"><span class="num">21</span> Readiness Checklist</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>How to use this document:</strong> All section bodies are <code>contenteditable</code> — click any section body to edit inline. Sections collapse/expand on header click. The Implementation section (Part C, §19) contains the fully detailed step-by-step build guide for the Exam Engine.
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                    PART A — SYSTEM SPECIFICATION               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- ─── SECTION 1 ─── -->
+  <section class="section" id="s1">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">1</span> System Overview</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <p><strong>MindMosaic</strong> is an online practice assessment platform for Australian students preparing for NAPLAN-style assessments in <strong>Years 3, 5, 7, and 9</strong>. It delivers fully online practice tests aligned with NAPLAN structure, domains, and evaluation criteria while operating strictly as a <strong>practice-only</strong> environment.</p>
+
+      <h3>Domains</h3>
+      <p>Writing, Reading, Conventions of Language (CoL), and Numeracy.</p>
+
+      <h3>Users</h3>
+      <table>
+        <thead><tr><th>Role</th><th>Capabilities</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Student</strong></td><td>Take practice exams, view results &amp; feedback, track progress</td></tr>
+          <tr><td><strong>Teacher</strong></td><td>View class reports, assign practice sets, review analytics</td></tr>
+          <tr><td><strong>Parent</strong></td><td>View child's progress reports and domain strengths</td></tr>
+          <tr><td><strong>Admin</strong></td><td>Manage item bank, review attempts, invalidate exams, manage feature flags</td></tr>
+          <tr><td><strong>Guest</strong></td><td>Take up to 3 practice exams without an account (no PII collected)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Scoring model</h3>
+      <p>Automated scoring for objective questions; automated writing evaluation aligned with NAPLAN criteria (heuristic/LLM-based). All scores are <strong>practice estimates</strong>.</p>
+
+      <div class="callout callout-danger">
+        <strong>Label requirement:</strong> All student-visible scoring outputs must include: <em>"Practice result — not an official NAPLAN score."</em> MindMosaic must never claim parity with official NAPLAN marking.
+      </div>
+
+      <h3>Age &amp; consent</h3>
+      <ul>
+        <li>Year 3 (~8), Year 5 (~10), Year 7 (~12), Year 9 (~14). All users under 16 require parental consent (Australian Privacy Act).</li>
+        <li>Guest mode collects no PII beyond a device fingerprint — no age gate required.</li>
+        <li>Writing submissions for users under 16 are subject to content safety scanning.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2 ─── -->
+  <section class="section" id="s2">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">2</span> Tech Stack</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <div class="grid-2">
+        <div>
+          <h3>Frontend</h3>
+          <ul>
+            <li><strong>React 18</strong> + TypeScript (strict)</li>
+            <li>Vite (bundler)</li>
+            <li>TailwindCSS (styling)</li>
+            <li>Zustand (local exam state)</li>
+            <li>TanStack Query (server state + cache)</li>
+            <li>Dexie.js (IndexedDB offline buffer)</li>
+            <li>Zod (client-side DTO validation)</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Backend</h3>
+          <ul>
+            <li><strong>Supabase</strong> (managed platform)</li>
+            <li>PostgreSQL 15+</li>
+            <li>Supabase Auth (JWT)</li>
+            <li>Supabase Storage (media)</li>
+            <li>Row Level Security (deny-by-default)</li>
+            <li>Edge Functions (Deno runtime, &lt;25s)</li>
+            <li>PgBouncer (connection pooling, transaction mode)</li>
+            <li>pg_cron (scheduled fallback jobs)</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Repo &amp; CI</h3>
+      <ul>
+        <li>GitHub + Turborepo monorepo: <code>apps/web</code>, <code>packages/shared</code>, <code>supabase/</code></li>
+        <li>pnpm, ESLint + Prettier, lint-staged</li>
+        <li>GitHub Actions: lint → type-check → unit test → build → e2e</li>
+        <li>Vitest (unit/integration), Playwright (E2E)</li>
+        <li>Supabase CLI (local dev, migrations, seed data)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 3 ─── -->
+  <section class="section" id="s3">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">3</span> Non-Negotiable Constraints</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>A. Confidentiality</h3>
+      <ul>
+        <li><strong>Client must never receive answer keys</strong> — no correct answers, regex validators, numeric tolerances, or any derivable scoring data.</li>
+        <li><strong><code>scoring_config</code> never exposed</strong> to any frontend role — includes routing thresholds, band cutoffs, rubric mappings.</li>
+        <li>All API responses use <strong>role-specific DTOs</strong> returning minimum required fields.</li>
+        <li>During an attempt, students retrieve items <strong>only from the immutable snapshot</strong>, never live item bank tables.</li>
+      </ul>
+
+      <h3>B. Integrity</h3>
+      <ul>
+        <li><strong>Server-authoritative timer:</strong> <code>expires_at = started_at + time_limit_sec</code>; client timers are display-only.</li>
+        <li><strong>Immutable snapshots</strong> after attempt start (DB trigger enforced).</li>
+        <li><strong>No client-side scoring</strong> — results read from persisted server output only.</li>
+        <li><strong>Server-enforced state transitions</strong> via Postgres trigger (adjacency matrix).</li>
+        <li><strong>Reproducibility:</strong> results reference exact <code>snapshot_hash</code> (SHA-256 canonicalized) + <code>engine_version</code>.</li>
+        <li><strong>Server-side randomization</strong> during snapshot generation.</li>
+        <li><strong>Max 1 non-terminal attempt per user</strong> at any time across all domains (prevents answer-farming).</li>
+      </ul>
+
+      <h3>C. Access Control</h3>
+      <ul>
+        <li>All tables: <strong>RLS deny-by-default</strong>.</li>
+        <li>All exam writes: <strong>Edge Functions only</strong> (service role).</li>
+        <li>Guest access: <code>attempt_secret</code> stored bcrypt-hashed; verified via HMAC challenge-response.</li>
+        <li>All identifiers: UUIDv4 (unguessable).</li>
+        <li><strong>HSTS</strong> on all API responses (<code>Strict-Transport-Security: max-age=31536000; includeSubDomains</code>).</li>
+      </ul>
+
+      <h3>D. Abuse Prevention</h3>
+      <ul>
+        <li>Rate limiting on all endpoints (see §10).</li>
+        <li><strong>64 KB global request body limit</strong> on all Edge Functions, enforced before Zod parsing.</li>
+        <li>Per-field size limits in Zod schemas (text max 1000 chars, array fields max 50 entries).</li>
+        <li>Audit logging for all sensitive access.</li>
+        <li>Queue retry + dead-letter queue with alerting.</li>
+        <li>No sensitive data in client analytics/logs.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 4 ─── -->
+  <section class="section" id="s4">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">4</span> Exam Attempt Lifecycle (State Machine)</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>States</h3>
+      <table>
+        <thead><tr><th>State</th><th>Description</th><th>Terminal?</th></tr></thead>
+        <tbody>
+          <tr><td><code>created</code></td><td>Attempt exists, timer not started, snapshots not locked</td><td>No</td></tr>
+          <tr><td><code>started</code></td><td><code>started_at</code> set, <code>expires_at</code> computed, snapshots locked</td><td>No</td></tr>
+          <tr><td><code>in_progress</code></td><td>At least one persisted response exists (optional informational)</td><td>No</td></tr>
+          <tr><td><code>submitted</code></td><td>Final submission accepted, no further writes</td><td>No</td></tr>
+          <tr><td><code>scored</code></td><td>Scoring complete, results persisted</td><td>Yes</td></tr>
+          <tr><td><code>expired</code></td><td>Time elapsed, no further writes/submission</td><td>Yes</td></tr>
+          <tr><td><code>abandoned</code></td><td>Terminated without submission</td><td>Yes</td></tr>
+          <tr><td><code>invalidated</code></td><td>Voided by admin/system</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Allowed transitions</h3>
+<pre><code>created → started
+started → in_progress (optional)
+started | in_progress → submitted
+started | in_progress → expired
+started | in_progress → abandoned
+submitted → scored
+expired → submitted (server-only auto-submit, auto_submitted=true)
+any non-terminal → invalidated (admin/system only)</code></pre>
+
+      <h3>Enforcement</h3>
+      <ul>
+        <li>Postgres function <code>validate_attempt_transition(current, new) → boolean</code> encodes the adjacency matrix.</li>
+        <li><code>BEFORE UPDATE</code> trigger on <code>attempts</code>; invalid transitions raise exception.</li>
+        <li><code>created → started</code> must atomically: generate snapshots, set <code>started_at</code>/<code>expires_at</code>, store <code>randomization_seed</code> — single transaction.</li>
+        <li>Concurrent attempt guard: <code>SELECT count(*) FROM attempts WHERE user_id=$1 AND status IN ('created','started','in_progress') FOR UPDATE</code>. If ≥ 1, reject with <code>CONCURRENT_ATTEMPT_LIMIT</code>.</li>
+      </ul>
+
+      <h3>Expiry detection (dual-path)</h3>
+      <ul>
+        <li><strong>Primary — check-on-read:</strong> Every Edge Function that reads/writes an attempt checks <code>expires_at</code> inline. If overdue, transitions to expired (or submitted if auto-submit enabled) within the same transaction. Sub-second detection.</li>
+        <li><strong>Fallback — pg_cron:</strong> Runs every 60s with 5-second offset to avoid races: <code>UPDATE attempts SET status='expired' WHERE status IN ('started','in_progress') AND expires_at &lt; NOW() - INTERVAL '5 seconds'</code>.</li>
+      </ul>
+
+      <h3>Guard rules</h3>
+      <ul>
+        <li>No submit after expiry unless within grace window (default 5s). Grace applies to submit only.</li>
+        <li>No writes in terminal states.</li>
+        <li>Scoring idempotent (submitted → scored).</li>
+        <li>Invalidation records <code>invalidated_at</code>, <code>invalidated_by</code>, <code>invalidated_reason</code>.</li>
+        <li>Start idempotent: repeated requests return existing attempt without resetting timer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 5 ─── -->
+  <section class="section" id="s5">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">5</span> Timer &amp; Expiry Enforcement</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Server timing</h3>
+      <ul>
+        <li>On <code>created → started</code>: <code>started_at = NOW()</code>, <code>expires_at = started_at + time_limit_sec * INTERVAL '1 second'</code>.</li>
+        <li>All expiry decisions use Postgres <code>NOW()</code> only.</li>
+      </ul>
+
+      <h3>Client sync</h3>
+      <ul>
+        <li>API returns <code>{ server_now, expires_at }</code>. Client computes drift and adjusts display.</li>
+        <li>Client timer is cosmetic — prompts submit at zero but does not lock UI.</li>
+        <li>Client polls <code>GET /attempt/:id/status</code> every 60s to detect server-side expiry.</li>
+      </ul>
+
+      <h3>Submit finalization (transactional)</h3>
+      <ol>
+        <li>Validate status is started/in_progress.</li>
+        <li>Validate <code>NOW() ≤ expires_at + grace_window</code>.</li>
+        <li>Atomically: persist final responses, set <code>submitted_at</code>, status → submitted.</li>
+        <li>Enqueue scoring job (async — does NOT block).</li>
+        <li>Return immediately: <code>{ status: 'submitted' }</code>.</li>
+      </ol>
+
+      <h3>Submit idempotency</h3>
+      <p>Via <code>submission_id</code> (client-generated UUID). Repeated submit with same ID returns existing outcome.</p>
+
+      <h3>Autosave — atomic stale-write protection</h3>
+      <p>Monotonic <code>client_revision</code> per item. Enforcement is in the SQL upsert, not application code:</p>
+<pre><code>INSERT INTO attempt_responses
+  (attempt_id, item_snapshot_id, response_payload, client_revision, saved_at)
+VALUES ($1, $2, $3, $4, now())
+ON CONFLICT (attempt_id, item_snapshot_id)
+DO UPDATE SET
+  response_payload = EXCLUDED.response_payload,
+  client_revision  = EXCLUDED.client_revision,
+  saved_at         = now()
+WHERE attempt_responses.client_revision < EXCLUDED.client_revision
+RETURNING id;</code></pre>
+      <p>If zero rows returned → <code>STALE_REVISION</code> (409, retryable). <code>SELECT ... FOR UPDATE</code> on the <code>attempts</code> row serializes per-attempt writes.</p>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 6 ─── -->
+  <section class="section" id="s6">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">6</span> Anti-Cheat Controls</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <h3>Trust model</h3>
+      <p>Client events are untrusted telemetry. Only the server decides warnings, auto-submit, or invalidation. Enforcement is deterministic: same event stream → same outcome.</p>
+
+      <h3>Event contract</h3>
+      <p><code>{ attempt_id, event_type, client_event_seq, client_event_ts_ms, observed_state }</code></p>
+      <p><code>event_type</code> ∈ { <code>fullscreen_exit</code>, <code>focus_loss</code>, <code>context_menu</code> }</p>
+
+      <h3>Server rules</h3>
+      <ul>
+        <li>Accept only if status is started/in_progress.</li>
+        <li>Sequence guard: ignore events where <code>client_event_seq ≤ last_processed_event_seq</code>.</li>
+        <li>Dedup window: don't increment counters within <code>DEDUP_WINDOW_MS</code>.</li>
+      </ul>
+
+      <h3>Thresholds</h3>
+      <table>
+        <thead><tr><th>Violation</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Fullscreen exit</td><td>1–2 → warning; 3 → auto-submit</td></tr>
+          <tr><td>Focus loss</td><td>1–3 → warning; 4 → auto-submit</td></tr>
+          <tr><td>Right-click</td><td>Deterrence only; log + correlate</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Enforcement</h3>
+      <ul>
+        <li>Warnings: persist <code>last_warning_type</code>, <code>last_warning_at</code>; return warning to client.</li>
+        <li>Auto-submit: atomically set <code>auto_submitted=true</code>, reason, status → submitted, lock writes.</li>
+        <li>Idempotent: repeated triggers return existing submitted state.</li>
+        <li>Counter + threshold + transition: single atomic transaction.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 7 ─── -->
+  <section class="section" id="s7">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">7</span> Writing Module</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <h3>Editor constraints</h3>
+      <ul>
+        <li>Plain text only — no rich text, no formatting tools.</li>
+        <li>Paste disabled (<code>onPaste</code> intercepted).</li>
+        <li>Spellcheck disabled (<code>spellcheck=false</code>, <code>autocorrect=off</code>).</li>
+        <li>Autosave every 5s (debounced from last keystroke).</li>
+        <li>Hard character limit: <strong>3,000 chars</strong> at textarea level + server enforcement.</li>
+      </ul>
+
+      <h3>Word limits</h3>
+      <p>Min: 20 words (submit-time). Max: 350 words (save + submit).</p>
+
+      <h3>Deterministic word count</h3>
+<pre><code>function countWords(text: string): number {
+  return text
+    .replace(/\n/g, ' ')
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(t => t.length > 0)
+    .length;
+}</code></pre>
+      <p class="muted">Both client and server implement identical logic; server is authoritative.</p>
+
+      <h3>Prompt display</h3>
+      <ul>
+        <li>Stimulus + task instruction displayed above editor, read-only, from snapshot (not live data).</li>
+        <li>May include images (signed Supabase Storage URLs, 2-hour expiry).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 8 ─── -->
+  <section class="section" id="s8">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">8</span> Content Selection &amp; Snapshots</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <h3>Selection rules</h3>
+      <ul>
+        <li>Questions selected from published pools per (domain, year_level).</li>
+        <li>No-repeat window: last 50 attempts. If pool exhausted: allow repeats, flag attempt.</li>
+        <li>Writing prompts: no-repeat window of 50 per year_level.</li>
+      </ul>
+
+      <h3>Snapshot rules</h3>
+      <ul>
+        <li>Question list, order, option order, and prompt all frozen at attempt start (immutable).</li>
+        <li>Snapshot records are append-only — <code>BEFORE UPDATE</code> trigger raises exception.</li>
+        <li>Randomization seed stored with snapshot for reproducibility.</li>
+      </ul>
+
+      <h3>Snapshot hash specification</h3>
+      <p><code>snapshot_hash</code> = SHA-256 of canonicalized JSON (keys sorted recursively, no whitespace).</p>
+<pre><code>// packages/shared/src/hash.ts
+import { createHash } from 'crypto';
+
+export function computeSnapshotHash(data: unknown): string {
+  const canonical = JSON.stringify(data, (_, v) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.keys(v).sort().reduce((o, k) => { o[k] = v[k]; return o; }, {} as any)
+      : v
+  );
+  return createHash('sha256').update(canonical).digest('hex');
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 9 ─── -->
+  <section class="section" id="s9">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">9</span> Guest Mode</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <h3>Caps</h3>
+      <p>3 attempts lifetime (best-effort) via <code>guest_device_id</code>. Secondary: rate limit by IP/User-Agent.</p>
+
+      <h3>Security</h3>
+      <ul>
+        <li><code>attempt_secret</code> stored bcrypt-hashed server-side.</li>
+        <li>Plaintext secret returned <strong>once only</strong> in <code>createGuestAttempt</code> response. Never logged.</li>
+        <li>Guest writes via Edge Functions verifying secret.</li>
+        <li>Session tokens: 15-min, bound to <code>attempt_id</code>, non-renewable.</li>
+      </ul>
+
+      <h3>Transport security</h3>
+      <ul>
+        <li>HSTS on all responses.</li>
+        <li>Challenge-response verification: client sends <code>HMAC-SHA256(attempt_id + ":" + timestamp, secret)</code>. Timestamp must be within ±60s of server time.</li>
+        <li>Brute-force protection: after 3 consecutive failures for same <code>attempt_id</code>, exponential backoff (5s → 30s → 10min block). Tracked via <code>guest_verify_failures</code> counter.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 10 ─── -->
+  <section class="section" id="s10">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">10</span> Edge Functions &amp; API</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Endpoints</h3>
+      <table>
+        <thead><tr><th>Function</th><th>Method</th><th>Auth</th><th>Rate Limit</th></tr></thead>
+        <tbody>
+          <tr><td><code>startAttempt</code></td><td>POST</td><td>JWT</td><td>5/min/user</td></tr>
+          <tr><td><code>saveResponse</code></td><td>POST</td><td>JWT</td><td>60/min/attempt</td></tr>
+          <tr><td><code>submitAttempt</code></td><td>POST</td><td>JWT</td><td>3/min/attempt</td></tr>
+          <tr><td><code>getAttemptStatus</code></td><td>GET</td><td>JWT</td><td>30/min/attempt</td></tr>
+          <tr><td><code>createGuestAttempt</code></td><td>POST</td><td>none</td><td>3/hr/IP</td></tr>
+          <tr><td><code>verifyGuestSecret</code></td><td>POST</td><td>none</td><td>5/min/IP</td></tr>
+          <tr><td><code>saveGuestResponse</code></td><td>POST</td><td>guest token</td><td>60/min/attempt</td></tr>
+          <tr><td><code>submitGuestAttempt</code></td><td>POST</td><td>guest token</td><td>3/min/attempt</td></tr>
+          <tr><td><code>logAnalyticsEvent</code></td><td>POST</td><td>JWT/guest</td><td>120/min/attempt</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Response envelope</h3>
+<pre><code>// Success
+{ "data": {...}, "correlation_id": "uuid" }
+
+// Error
+{ "error": { "code": "ATTEMPT_EXPIRED", "message": "...", "retryable": false }, "correlation_id": "uuid" }</code></pre>
+
+      <h3>Request validation</h3>
+      <ul>
+        <li><strong>64 KB body limit</strong> enforced first (before parsing). Returns <code>413 PAYLOAD_TOO_LARGE</code>.</li>
+        <li>Zod schema validation on all request bodies. Invalid → <code>400 INVALID_REQUEST</code>.</li>
+        <li><code>Content-Type: application/json</code> required; reject non-JSON.</li>
+        <li><code>correlation_id</code> generated at entry; propagated to all DB writes.</li>
+        <li>HSTS header set on all responses.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 11 ─── -->
+  <section class="section" id="s11">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">11</span> Question Types &amp; Interaction Model</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Supported types</h3>
+      <table>
+        <thead><tr><th>Type</th><th>Domain(s)</th><th>Interaction</th><th>Response Shape</th></tr></thead>
+        <tbody>
+          <tr><td><code>mcq</code></td><td>All</td><td>Select one (radio)</td><td><code>{ selected_option_id: uuid }</code></td></tr>
+          <tr><td><code>multi_select</code></td><td>Reading, CoL</td><td>Select 1+ (checkbox)</td><td><code>{ selected_option_ids: uuid[] }</code></td></tr>
+          <tr><td><code>short_text</code></td><td>Numeracy, CoL</td><td>Single-line input</td><td><code>{ text: string }</code></td></tr>
+          <tr><td><code>numeric</code></td><td>Numeracy</td><td>Number input</td><td><code>{ value: string }</code></td></tr>
+          <tr><td><code>drag_drop</code></td><td>CoL, Numeracy</td><td>Drag to slots</td><td><code>{ placements: {item_id: slot_id}[] }</code></td></tr>
+          <tr><td><code>inline_dropdown</code></td><td>CoL</td><td>Dropdown in passage</td><td><code>{ selections: {gap_id: option_id}[] }</code></td></tr>
+          <tr><td><code>order</code></td><td>CoL, Reading</td><td>Reorder items</td><td><code>{ ordered_item_ids: uuid[] }</code></td></tr>
+          <tr><td><code>writing</code></td><td>Writing</td><td>Plain text editor</td><td><code>{ text: string, word_count: int }</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Client contract</h3>
+      <ul>
+        <li>Each snapshot question contains: <code>question_type</code>, <code>stimulus</code>, <code>stem</code>, <code>interaction_config</code> (display-only), <code>media_refs</code>.</li>
+        <li>Renderer dispatches to type-specific sub-components via <code>question_type</code>.</li>
+        <li>All emit <code>onResponseChange(item_snapshot_id, response_payload)</code>.</li>
+        <li>Response validated client-side (Zod) before autosave.</li>
+      </ul>
+
+      <div class="callout callout-danger">
+        <strong>interaction_config contains ONLY display data</strong> — option labels, gap positions, zone definitions. Never correct answers, scores, or validators. Scoring config lives in <code>item_scoring_config</code> (server-only, no student RLS).
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 12 ─── -->
+  <section class="section" id="s12">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">12</span> Scoring &amp; Results Pipeline</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <div class="callout callout-success">
+        <strong>Key design:</strong> Scoring is always async. <code>submitAttempt</code> enqueues a job and returns immediately. The client polls or subscribes via Realtime until <code>status = scored</code>.
+      </div>
+
+      <h3>Scoring job queue</h3>
+<pre><code>scoring_jobs (
+  id              uuid PK,
+  attempt_id      uuid NOT NULL REFERENCES attempts,
+  idempotency_key uuid NOT NULL UNIQUE, -- same as submission_id
+  job_type        text CHECK (IN ('objective','writing')),
+  status          text CHECK (IN ('pending','processing','completed','failed','dead')),
+  retries / max_retries / last_error / timestamps
+)</code></pre>
+      <p>Insert uses <code>ON CONFLICT (idempotency_key) DO NOTHING</code> — duplicate submits never create duplicate jobs.</p>
+
+      <h3>Worker flow</h3>
+      <ol>
+        <li>Pick oldest pending: <code>UPDATE ... WHERE id = (SELECT id ... FOR UPDATE SKIP LOCKED) RETURNING *</code></li>
+        <li>If attempt already scored → mark job completed, exit.</li>
+        <li>Load responses + <code>item_scoring_config</code>.</li>
+        <li>Evaluate: mcq=exact match, multi_select=set compare, short_text=normalised match, numeric=tolerance, drag_drop/dropdown/order=exact match.</li>
+        <li>Persist <code>attempt_item_results</code> + <code>attempt_results</code>.</li>
+        <li>Transition attempt → <code>scored</code>.</li>
+        <li>On failure: retry up to <code>max_retries</code>, then move to <code>dead</code> (DLQ alert fires).</li>
+      </ol>
+
+      <h3>Writing scoring</h3>
+      <p>Separate <code>job_type='writing'</code> job. Evaluates against 10 NAPLAN criteria. Persists to <code>writing_results</code>. Content safety scan in parallel. Does not block objective scoring.</p>
+
+      <h3>Results display</h3>
+      <ul>
+        <li>Client shows "Scoring your exam…" between <code>submitted</code> and <code>scored</code>.</li>
+        <li>All results include practice disclaimer.</li>
+        <li>Writing may show "Scoring in progress…" independently.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 13 ─── -->
+  <section class="section" id="s13">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">13</span> Adaptive Routing (Testlet Model)</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+      <p>NAPLAN uses multi-stage adaptive routing: Stage 1 (common) → routing decision → Stage 2 (easier/standard/harder).</p>
+      <ul>
+        <li><strong>Phase 1:</strong> Single-stage, non-adaptive (flat question list). Simplifies engine.</li>
+        <li>Schema supports future routing via <code>testlet_sequence</code> and <code>routing_decision</code> table (not implemented Phase 1).</li>
+        <li>Routing thresholds in <code>scoring_config</code> (server-only). Decision happens server-side after Stage 1 submit.</li>
+      </ul>
+      <div class="callout callout-warn">
+        <strong>Phase 4 deliverable.</strong> Adaptive routing is a placeholder until Phase 4 implementation.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                    PART B — DATA & OPERATIONS                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- ─── SECTION 14 ─── -->
+  <section class="section" id="s14">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">14</span> Database Schema</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Entity relationship</h3>
+<pre><code>profiles ← attempts → attempt_snapshots
+                ↓
+          attempt_responses     (per item, atomic upsert)
+          attempt_results       (aggregate score)
+          attempt_item_results  (per item score)
+          writing_results       (writing domain only)
+          scoring_jobs          (async queue)
+          anticheat_events
+          ingest_events → worker → canonical tables
+          analytics_events / audit_events
+          dead_letter_queue     (with alerting)
+          feature_flags
+
+items → item_scoring_config (server-only)
+writing_prompts</code></pre>
+
+      <h3>Core tables</h3>
+<pre><code>-- User profiles
+profiles (
+  id uuid PK REFERENCES auth.users,
+  display_name text,
+  role text CHECK (role IN ('student','teacher','parent','admin')),
+  year_level int,
+  created_at timestamptz DEFAULT now()
+)
+
+-- Item bank
+items (
+  id uuid PK DEFAULT gen_random_uuid(),
+  domain text NOT NULL,
+  year_level int NOT NULL,
+  question_type text NOT NULL,
+  stem jsonb NOT NULL,
+  stimulus jsonb,
+  interaction_config jsonb NOT NULL,
+  media_refs jsonb,
+  status text DEFAULT 'draft',  -- draft|published|archived
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+)
+
+-- Scoring config (server-only — NO student RLS)
+item_scoring_config (
+  item_id uuid PK REFERENCES items,
+  correct_response jsonb NOT NULL,
+  scoring_rules jsonb,
+  max_score int DEFAULT 1
+)
+
+-- Writing prompts
+writing_prompts (
+  id uuid PK DEFAULT gen_random_uuid(),
+  year_level int NOT NULL,
+  genre text NOT NULL,
+  stimulus jsonb NOT NULL,
+  task_instruction text NOT NULL,
+  media_refs jsonb,
+  status text DEFAULT 'draft',
+  created_at timestamptz DEFAULT now()
+)
+
+-- Attempts
+attempts (
+  id uuid PK DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES profiles,
+  domain text NOT NULL,
+  year_level int NOT NULL,
+  status text NOT NULL DEFAULT 'created',
+  time_limit_sec int NOT NULL DEFAULT 2700,
+  started_at timestamptz,
+  expires_at timestamptz,
+  submitted_at timestamptz,
+  scored_at timestamptz,
+  expired_at timestamptz,
+  abandoned_at timestamptz,
+  invalidated_at timestamptz,
+  invalidated_by uuid,
+  invalidated_reason text,
+  auto_submitted boolean DEFAULT false,
+  auto_submit_reason text,
+  submission_id uuid UNIQUE,
+  snapshot_hash text,
+  engine_version text,
+  randomization_seed text,
+  guest_device_id text,
+  attempt_secret_hash text,
+  attempt_secret_expires_at timestamptz,
+  guest_verify_failures int DEFAULT 0,
+  focus_loss_count int DEFAULT 0,
+  fullscreen_exit_count int DEFAULT 0,
+  context_menu_count int DEFAULT 0,
+  last_processed_event_seq int DEFAULT 0,
+  last_warning_type text,
+  last_warning_at timestamptz,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+)
+
+-- Snapshots (immutable — trigger-protected)
+attempt_snapshots (
+  id uuid PK DEFAULT gen_random_uuid(),
+  attempt_id uuid NOT NULL REFERENCES attempts,
+  snapshot_data jsonb NOT NULL,
+  snapshot_hash text NOT NULL,
+  created_at timestamptz DEFAULT now()
+)
+
+-- Responses (atomic conditional upsert)
+attempt_responses (
+  id uuid PK DEFAULT gen_random_uuid(),
+  attempt_id uuid NOT NULL REFERENCES attempts,
+  item_snapshot_id uuid NOT NULL,
+  response_payload jsonb NOT NULL,
+  client_revision int NOT NULL,
+  saved_at timestamptz DEFAULT now(),
+  UNIQUE(attempt_id, item_snapshot_id)
+)
+
+-- Results
+attempt_results (
+  attempt_id uuid PK REFERENCES attempts,
+  domain text, year_level int,
+  total_items int, correct_count int,
+  score_raw numeric, score_pct numeric,
+  band_estimate text, engine_version text,
+  scored_at timestamptz DEFAULT now()
+)
+
+attempt_item_results (
+  attempt_id uuid NOT NULL REFERENCES attempts,
+  item_snapshot_id uuid NOT NULL,
+  is_correct boolean,
+  score_awarded numeric, max_score numeric,
+  created_at timestamptz DEFAULT now(),
+  PRIMARY KEY (attempt_id, item_snapshot_id)
+)
+
+writing_results (
+  attempt_id uuid PK REFERENCES attempts,
+  overall_band text,
+  criterion_scores jsonb,
+  evaluator_version text,
+  flagged_content boolean DEFAULT false,
+  scored_at timestamptz DEFAULT now()
+)
+
+-- Scoring queue
+scoring_jobs (
+  id uuid PK DEFAULT gen_random_uuid(),
+  attempt_id uuid NOT NULL REFERENCES attempts,
+  idempotency_key uuid NOT NULL UNIQUE,
+  job_type text NOT NULL DEFAULT 'objective'
+    CHECK (job_type IN ('objective','writing')),
+  status text NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending','processing','completed','failed','dead')),
+  retries int DEFAULT 0,
+  max_retries int DEFAULT 3,
+  last_error text,
+  created_at timestamptz DEFAULT now(),
+  started_at timestamptz,
+  completed_at timestamptz
+)
+
+-- Dead letter queue
+dead_letter_queue (
+  id uuid PK DEFAULT gen_random_uuid(),
+  source_table text NOT NULL,
+  source_id uuid NOT NULL,
+  error text,
+  payload jsonb,
+  resolved boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  resolved_at timestamptz
+)
+
+-- Feature flags
+feature_flags (
+  key text PK,
+  value boolean NOT NULL,
+  tier text NOT NULL DEFAULT 'standard',
+  updated_at timestamptz DEFAULT now()
+)</code></pre>
+
+      <h3>Indexes</h3>
+<pre><code>CREATE INDEX idx_attempts_user_status
+  ON attempts(user_id, status);
+CREATE INDEX idx_attempts_expiry_sweep
+  ON attempts(expires_at) WHERE status IN ('started','in_progress');
+CREATE INDEX idx_attempts_content_selection
+  ON attempts(user_id, domain, year_level, created_at DESC);
+CREATE INDEX idx_attempts_guest_device
+  ON attempts(guest_device_id) WHERE guest_device_id IS NOT NULL;
+CREATE INDEX idx_scoring_jobs_pickup
+  ON scoring_jobs(created_at ASC) WHERE status = 'pending';
+CREATE INDEX idx_ingest_events_unprocessed
+  ON ingest_events(created_at) WHERE processed = false;
+CREATE INDEX idx_dlq_unresolved
+  ON dead_letter_queue(created_at) WHERE resolved = false;</code></pre>
+
+      <h3>RLS policies</h3>
+      <table>
+        <thead><tr><th>Table</th><th>Student/Guest SELECT</th><th>Writes</th></tr></thead>
+        <tbody>
+          <tr><td>attempts</td><td>Own rows only</td><td>Service role only (Edge Functions)</td></tr>
+          <tr><td>attempt_snapshots</td><td>Own attempt only</td><td>Service role only</td></tr>
+          <tr><td>attempt_responses</td><td>Own attempt only</td><td>Service role only</td></tr>
+          <tr><td>attempt_results / item_results</td><td>Own attempt only</td><td>Service role only</td></tr>
+          <tr><td>items</td><td>Published only (via snapshot)</td><td>Admin only</td></tr>
+          <tr><td>item_scoring_config</td><td><strong>NONE</strong></td><td>Admin only</td></tr>
+          <tr><td>scoring_jobs / dead_letter_queue</td><td><strong>NONE</strong></td><td>Service role only</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 15 ─── -->
+  <section class="section" id="s15">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">15</span> Scalability &amp; Ingestion Pipeline</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Load assumptions</h3>
+      <ul>
+        <li>5,000 students start exams within 10 minutes.</li>
+        <li>Autosave every 5s → ~1,000 writes/sec peak.</li>
+        <li>Payload: objective ~1 KB, writing ~2–4 KB.</li>
+      </ul>
+
+      <h3>Async ingestion (event-driven)</h3>
+      <ul>
+        <li>Edge Functions insert into <code>ingest_events</code> (append-only, cheap writes).</li>
+        <li><strong>Primary:</strong> <code>AFTER INSERT</code> trigger calls <code>pg_notify('ingest_channel', NEW.id)</code>. Persistent worker listens and processes immediately (sub-second latency).</li>
+        <li><strong>Alternative:</strong> Supabase Realtime subscription on <code>ingest_events</code> (1–2s latency).</li>
+        <li><strong>Fallback:</strong> pg_cron every 60s catches anything missed during worker restart.</li>
+        <li>Worker drains to canonical tables with idempotency + atomic revision enforcement.</li>
+      </ul>
+
+      <h3>Worker responsibilities</h3>
+      <ul>
+        <li>Validate attempt active + not expired (check-on-read).</li>
+        <li>Validate item belongs to snapshot.</li>
+        <li>Enforce monotonic revision (atomic SQL).</li>
+        <li>Compute server-side word count; enforce max.</li>
+        <li>Mark processed; failures → dead_letter.</li>
+      </ul>
+
+      <h3>Backpressure</h3>
+      <p>If backlog > 10,000 rows: switch to batch mode (500/cycle), emit alert. Rate limiting and sampling available as emergency measures.</p>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 16 ─── -->
+  <section class="section" id="s16">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">16</span> Telemetry, Audit &amp; Alerting</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Analytics events</h3>
+      <p><code>attempt_started</code>, <code>question_viewed</code>, <code>answer_selected/changed</code>, <code>autosave_success/failed</code>, <code>offline_start/end</code>, <code>focus_lost/regained</code>, <code>fullscreen_exit</code>, <code>submit_started/completed/failed</code>, <code>auto_submit_triggered</code>, <code>repeat_pool_exhausted</code></p>
+      <p class="muted">High-frequency events may be batched/sampled.</p>
+
+      <h3>Audit events</h3>
+      <p>Admin content changes, attempt lifecycle transitions, secret verification failures, invalidation actions, feature flag changes.</p>
+
+      <h3>DLQ alerting</h3>
+      <ul>
+        <li>pg_cron every 5 min checks unresolved DLQ items.</li>
+        <li>If any exist: insert alert event + call webhook (Slack/PagerDuty).</li>
+        <li>Scoring staleness alert: any <code>scoring_jobs</code> pending > 5 minutes.</li>
+        <li>Admin endpoint: <code>GET /admin/queue-health</code> — returns scoring_jobs (pending/failed/dead), ingest_events (unprocessed), DLQ (unresolved + oldest age). Admin-only.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 17 ─── -->
+  <section class="section" id="s17">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">17</span> Error Taxonomy</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <table>
+        <thead><tr><th>Code</th><th>HTTP</th><th>Retry</th><th>Client Message</th></tr></thead>
+        <tbody>
+          <tr><td><code>INVALID_REQUEST</code></td><td>400</td><td>No</td><td>Something went wrong. Please try again.</td></tr>
+          <tr><td><code>UNAUTHORIZED</code></td><td>401</td><td>No</td><td>Please sign in to continue.</td></tr>
+          <tr><td><code>FORBIDDEN</code></td><td>403</td><td>No</td><td>You don't have access to this resource.</td></tr>
+          <tr><td><code>ATTEMPT_NOT_FOUND</code></td><td>404</td><td>No</td><td>This exam could not be found.</td></tr>
+          <tr><td><code>ATTEMPT_EXPIRED</code></td><td>409</td><td>No</td><td>Time's up! Your exam has ended.</td></tr>
+          <tr><td><code>ATTEMPT_ALREADY_SUBMITTED</code></td><td>409</td><td>No</td><td>This exam has already been submitted.</td></tr>
+          <tr><td><code>INVALID_TRANSITION</code></td><td>409</td><td>No</td><td>This action isn't available right now.</td></tr>
+          <tr><td><code>STALE_REVISION</code></td><td>409</td><td>Yes</td><td>(Silent — next autosave has higher revision)</td></tr>
+          <tr><td><code>CONCURRENT_ATTEMPT_LIMIT</code></td><td>409</td><td>No</td><td>You already have an exam in progress.</td></tr>
+          <tr><td><code>WORD_COUNT_EXCEEDED</code></td><td>422</td><td>No</td><td>Your response exceeds the word limit.</td></tr>
+          <tr><td><code>WORD_COUNT_BELOW_MIN</code></td><td>422</td><td>No</td><td>Your response is below the minimum word count.</td></tr>
+          <tr><td><code>PAYLOAD_TOO_LARGE</code></td><td>413</td><td>No</td><td>Request too large. Please try again.</td></tr>
+          <tr><td><code>RATE_LIMITED</code></td><td>429</td><td>Yes</td><td>Too many requests. Please wait a moment.</td></tr>
+          <tr><td><code>GUEST_LIMIT_REACHED</code></td><td>403</td><td>No</td><td>Guest exam limit reached. Sign up for more.</td></tr>
+          <tr><td><code>SERVER_ERROR</code></td><td>500</td><td>Yes</td><td>Something went wrong. We're looking into it.</td></tr>
+          <tr><td><code>SERVICE_UNAVAILABLE</code></td><td>503</td><td>Yes</td><td>The service is temporarily unavailable.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Client handling</h3>
+      <ul>
+        <li><strong>Retryable:</strong> exponential backoff, max 3 retries, then show error.</li>
+        <li><strong>ATTEMPT_EXPIRED / ALREADY_SUBMITTED:</strong> navigate to results/ended screen.</li>
+        <li><strong>STALE_REVISION:</strong> silent — next save wins.</li>
+        <li><strong>CONCURRENT_ATTEMPT_LIMIT:</strong> show message + link to resume existing attempt.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 18 ─── -->
+  <section class="section" id="s18">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-spec">18</span> Feature Flags &amp; Kill Switches</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Flags</h3>
+      <table>
+        <thead><tr><th>Flag</th><th>Default</th><th>Tier</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>maintenance_mode</code></td><td>false</td><td><span class="tag tag-critical">Critical</span></td><td>Blocks new exam starts; in-progress continue</td></tr>
+          <tr><td><code>autosave_enabled</code></td><td>true</td><td><span class="tag tag-critical">Critical</span></td><td>Emergency autosave disable</td></tr>
+          <tr><td><code>anticheat_auto_submit_enabled</code></td><td>true</td><td><span class="tag tag-critical">Critical</span></td><td>Violations logged but auto-submit disabled when false</td></tr>
+          <tr><td><code>writing_evaluation_enabled</code></td><td>true</td><td>Standard</td><td>Writing stored but not auto-scored when false</td></tr>
+          <tr><td><code>guest_mode_enabled</code></td><td>true</td><td>Standard</td><td>Guest creation disabled when false</td></tr>
+          <tr><td><code>adaptive_routing_enabled</code></td><td>false</td><td>Standard</td><td>Multi-stage testlets when true</td></tr>
+          <tr><td><code>auto_submit_on_expiry</code></td><td>true</td><td>Standard</td><td>Expired attempts auto-submitted when true</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Tiered cache</h3>
+      <ul>
+        <li><strong>Critical tier:</strong> 10-second TTL.</li>
+        <li><strong>Standard tier:</strong> 60-second TTL.</li>
+        <li><strong>Realtime subscription:</strong> Edge Functions subscribe to <code>feature_flags</code> table changes. Updates invalidate cache immediately (1–2s propagation).</li>
+        <li><strong>Force-refresh:</strong> <code>POST /admin/flush-flag-cache</code> — inserts cache-bust sentinel via Realtime.</li>
+      </ul>
+
+<pre><code>// flagCache.ts
+const cache = new Map&lt;string, { value: boolean; tier: string; fetchedAt: number }&gt;();
+const TTL = { critical: 10_000, standard: 60_000 };
+
+export async function getFlag(key: string): Promise&lt;boolean&gt; {
+  const cached = cache.get(key);
+  const ttl = TTL[cached?.tier ?? 'standard'];
+  if (cached && Date.now() - cached.fetchedAt < ttl) return cached.value;
+  const { data } = await supabase.from('feature_flags')
+    .select('value, tier').eq('key', key).single();
+  cache.set(key, { value: data.value, tier: data.tier, fetchedAt: Date.now() });
+  return data.value;
+}
+
+// Realtime listener
+supabase.channel('flags').on('postgres_changes',
+  { event: 'UPDATE', schema: 'public', table: 'feature_flags' },
+  (payload) => cache.delete(payload.new.key)
+).subscribe();</code></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--            PART C — IMPLEMENTATION                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- ─── SECTION 19 ─── -->
+  <section class="section" id="s19">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-impl">19</span> Phase 1: Exam Engine — Full Implementation</h2>
+      <span class="section-badge badge-impl">DETAILED</span>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <div class="callout callout-success">
+        <strong>Phase 1 goal:</strong> A student can start a single-domain practice exam, answer MCQ + short_text questions, see a countdown timer, have responses autosaved, submit, and view scored results.<br>
+        <strong>Timeline:</strong> 7–9 weeks &nbsp;|&nbsp; <strong>13 steps</strong> &nbsp;|&nbsp; All audit remediations baked in.
+      </div>
+
+      <h3>Phase 1 scope boundaries</h3>
+      <table>
+        <thead><tr><th>Included</th><th>Excluded (later phases)</th></tr></thead>
+        <tbody>
+          <tr><td>Single-stage, non-adaptive exams</td><td>Multi-stage adaptive routing (Phase 4)</td></tr>
+          <tr><td>Authenticated users only</td><td>Guest mode (Phase 3)</td></tr>
+          <tr><td>MCQ + short_text question types</td><td>drag_drop, inline_dropdown, order, numeric (Phase 2/4)</td></tr>
+          <tr><td>Objective scoring (async via queue)</td><td>Writing module + writing evaluation (Phase 2)</td></tr>
+          <tr><td>Direct Edge Function writes + atomic upsert</td><td>Full async ingestion pipeline (Phase 3)</td></tr>
+          <tr><td>Anti-cheat event logging (passive)</td><td>Anti-cheat enforcement/auto-submit (Phase 2)</td></tr>
+          <tr><td>Concurrent attempt limit enforced</td><td>—</td></tr>
+          <tr><td>Payload size limits enforced</td><td>—</td></tr>
+          <tr><td>Async scoring with polling/Realtime</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <!-- ═══════ STEP 1.1 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.1</span> Project Scaffold &amp; Supabase Setup</div>
+          <span class="step-effort">~2 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Tasks</h4>
+          <ul>
+            <li><strong>Init Turborepo monorepo:</strong>
+              <ul>
+                <li><code>apps/web</code> — Vite + React 18 + TypeScript strict + TailwindCSS</li>
+                <li><code>packages/shared</code> — shared types, Zod schemas, constants, utilities</li>
+                <li><code>supabase/</code> — migrations, seed data, Edge Functions</li>
+              </ul>
+            </li>
+            <li><strong>Init Supabase:</strong> <code>supabase init</code> + <code>supabase start</code> for local dev.</li>
+            <li><strong>Configure auth:</strong> Supabase Auth with email/password (social login deferred).</li>
+            <li><strong>Setup CI:</strong> GitHub Actions pipeline — lint → type-check → build. Branch protection rules.</li>
+            <li><strong>Package manager:</strong> pnpm with workspace config. ESLint + Prettier + lint-staged.</li>
+            <li><strong>Env template:</strong> <code>.env.local</code> with <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code>.</li>
+          </ul>
+
+          <h4>File structure</h4>
+<pre><code>mindmosaic/
+├── apps/
+│   └── web/
+│       ├── src/
+│       │   ├── components/    # React components
+│       │   ├── hooks/         # Custom hooks (useStartAttempt, etc.)
+│       │   ├── stores/        # Zustand stores
+│       │   ├── pages/         # Route pages
+│       │   ├── lib/           # Supabase client, utils
+│       │   └── App.tsx
+│       ├── vite.config.ts
+│       └── tailwind.config.ts
+├── packages/
+│   └── shared/
+│       └── src/
+│           ├── types/         # TypeScript types
+│           ├── schemas/       # Zod schemas
+│           ├── constants.ts
+│           └── hash.ts        # computeSnapshotHash
+├── supabase/
+│   ├── migrations/            # SQL migrations (numbered)
+│   ├── functions/             # Edge Functions
+│   └── seed.sql
+├── turbo.json
+├── pnpm-workspace.yaml
+└── .github/workflows/ci.yml</code></pre>
+
+          <h4>Deliverable</h4>
+          <p>Local dev running: <code>pnpm dev</code> starts Vite + Supabase. Auth sign-up/sign-in working. CI green.</p>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.2 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.2</span> Database Schema, RLS &amp; Indexes</div>
+          <span class="step-effort">~4 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Migrations to create</h4>
+          <ol>
+            <li><strong><code>001_profiles.sql</code></strong> — <code>profiles</code> table + trigger on <code>auth.users</code> insert to auto-create profile row.</li>
+            <li><strong><code>002_items.sql</code></strong> — <code>items</code> + <code>item_scoring_config</code> tables.</li>
+            <li><strong><code>003_attempts.sql</code></strong> — <code>attempts</code> table with all fields from §14, including <code>guest_verify_failures</code>.</li>
+            <li><strong><code>004_snapshots.sql</code></strong> — <code>attempt_snapshots</code> with immutability trigger:
+<pre><code>CREATE FUNCTION prevent_snapshot_update() RETURNS trigger AS $$
+BEGIN
+  RAISE EXCEPTION 'Snapshots are immutable after creation';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_snapshot_immutable
+  BEFORE UPDATE ON attempt_snapshots
+  FOR EACH ROW EXECUTE FUNCTION prevent_snapshot_update();</code></pre>
+            </li>
+            <li><strong><code>005_responses.sql</code></strong> — <code>attempt_responses</code> with <code>UNIQUE(attempt_id, item_snapshot_id)</code>.</li>
+            <li><strong><code>006_results.sql</code></strong> — <code>attempt_results</code> (PK: attempt_id) + <code>attempt_item_results</code> (composite PK: attempt_id + item_snapshot_id) + <code>writing_results</code>.</li>
+            <li><strong><code>007_scoring_jobs.sql</code></strong> — <code>scoring_jobs</code> with <code>idempotency_key UNIQUE</code>.</li>
+            <li><strong><code>008_dlq.sql</code></strong> — <code>dead_letter_queue</code>.</li>
+            <li><strong><code>009_feature_flags.sql</code></strong> — <code>feature_flags</code> with <code>tier</code> column + default rows for all 7 flags.</li>
+            <li><strong><code>010_transitions.sql</code></strong> — State transition function + trigger:
+<pre><code>CREATE FUNCTION validate_attempt_transition()
+RETURNS trigger AS $$
+DECLARE
+  valid boolean;
+BEGIN
+  IF OLD.status = NEW.status THEN RETURN NEW; END IF;
+
+  valid := CASE
+    WHEN OLD.status = 'created'     AND NEW.status = 'started'      THEN true
+    WHEN OLD.status = 'started'     AND NEW.status = 'in_progress'  THEN true
+    WHEN OLD.status IN ('started','in_progress') AND NEW.status = 'submitted'   THEN true
+    WHEN OLD.status IN ('started','in_progress') AND NEW.status = 'expired'     THEN true
+    WHEN OLD.status IN ('started','in_progress') AND NEW.status = 'abandoned'   THEN true
+    WHEN OLD.status = 'submitted'   AND NEW.status = 'scored'       THEN true
+    WHEN OLD.status = 'expired'     AND NEW.status = 'submitted'    THEN true
+    WHEN NEW.status = 'invalidated' AND OLD.status NOT IN ('scored','expired','abandoned','invalidated') THEN true
+    ELSE false
+  END;
+
+  IF NOT valid THEN
+    RAISE EXCEPTION 'Invalid transition: % → %', OLD.status, NEW.status;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_attempt_transition
+  BEFORE UPDATE OF status ON attempts
+  FOR EACH ROW EXECUTE FUNCTION validate_attempt_transition();</code></pre>
+            </li>
+            <li><strong><code>011_indexes.sql</code></strong> — All 7 indexes from §14.</li>
+            <li><strong><code>012_rls.sql</code></strong> — RLS policies: deny-by-default on all tables. Example:
+<pre><code>ALTER TABLE attempts ENABLE ROW LEVEL SECURITY;
+-- Students read own attempts
+CREATE POLICY attempts_student_select ON attempts
+  FOR SELECT USING (auth.uid() = user_id);
+-- All writes via service role (Edge Functions)
+-- No INSERT/UPDATE/DELETE policies for anon/authenticated
+
+ALTER TABLE item_scoring_config ENABLE ROW LEVEL SECURITY;
+-- NO select policy for students/guests — completely hidden</code></pre>
+            </li>
+            <li><strong><code>013_functions.sql</code></strong> — Helper functions:
+<pre><code>CREATE FUNCTION count_active_attempts(p_user_id uuid)
+RETURNS int AS $$
+  SELECT count(*)::int FROM attempts
+  WHERE user_id = p_user_id
+    AND status IN ('created','started','in_progress')
+  FOR UPDATE;
+$$ LANGUAGE sql;</code></pre>
+            </li>
+          </ol>
+
+          <h4>Seed data</h4>
+          <p><code>seed.sql</code>: 20 MCQ items + 10 short_text items across Reading/Numeracy/CoL for Years 3/5/7/9. Each with corresponding <code>item_scoring_config</code> rows. Feature flag defaults.</p>
+
+          <h4>Deliverable</h4>
+          <p><code>supabase db reset</code> creates all tables, triggers, indexes, RLS, seed data. Transition trigger manually tested. Student cannot SELECT from <code>item_scoring_config</code>.</p>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.1</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.3 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.3</span> Shared Types, Zod Schemas &amp; Utilities</div>
+          <span class="step-effort">~2 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Types (<code>packages/shared/src/types/</code>)</h4>
+<pre><code>// types/attempt.ts
+export type AttemptStatus =
+  | 'created' | 'started' | 'in_progress'
+  | 'submitted' | 'scored'
+  | 'expired' | 'abandoned' | 'invalidated';
+
+export type QuestionType =
+  | 'mcq' | 'multi_select' | 'short_text' | 'numeric'
+  | 'drag_drop' | 'inline_dropdown' | 'order' | 'writing';
+
+export interface Attempt {
+  id: string;
+  user_id: string | null;
+  domain: string;
+  year_level: number;
+  status: AttemptStatus;
+  time_limit_sec: number;
+  started_at: string | null;
+  expires_at: string | null;
+  submitted_at: string | null;
+  scored_at: string | null;
+  auto_submitted: boolean;
+  submission_id: string | null;
+  snapshot_hash: string | null;
+  engine_version: string | null;
+}
+
+export interface SnapshotItem {
+  item_snapshot_id: string;
+  question_type: QuestionType;
+  stem: Record&lt;string, unknown&gt;;
+  stimulus?: Record&lt;string, unknown&gt;;
+  interaction_config: Record&lt;string, unknown&gt;;
+  media_refs?: Record&lt;string, string&gt;;
+}
+
+export interface AttemptResult {
+  attempt_id: string;
+  total_items: number;
+  correct_count: number;
+  score_pct: number;
+  band_estimate: string | null;
+}
+
+export interface ItemResult {
+  item_snapshot_id: string;
+  is_correct: boolean;
+  score_awarded: number;
+  max_score: number;
+}</code></pre>
+
+          <h4>Zod schemas (<code>packages/shared/src/schemas/</code>)</h4>
+<pre><code>// schemas/api.ts
+import { z } from 'zod';
+
+export const StartAttemptRequest = z.object({
+  domain: z.enum(['reading', 'writing', 'col', 'numeracy']),
+  year_level: z.enum([3, 5, 7, 9].map(String) as [string, ...string[]]).transform(Number),
+});
+
+export const SaveResponseRequest = z.object({
+  attempt_id: z.string().uuid(),
+  item_snapshot_id: z.string().uuid(),
+  response_payload: z.union([
+    z.object({ selected_option_id: z.string().uuid() }),                    // mcq
+    z.object({ selected_option_ids: z.array(z.string().uuid()).max(20) }),   // multi_select
+    z.object({ text: z.string().max(1000) }),                               // short_text
+    z.object({ value: z.string().max(100) }),                               // numeric
+    z.object({ placements: z.array(z.object({
+      item_id: z.string(), slot_id: z.string()
+    })).max(50) }),                                                          // drag_drop
+    z.object({ selections: z.array(z.object({
+      gap_id: z.string(), option_id: z.string()
+    })).max(50) }),                                                          // inline_dropdown
+    z.object({ ordered_item_ids: z.array(z.string().uuid()).max(50) }),     // order
+    z.object({ text: z.string().max(3000), word_count: z.number().int() }), // writing
+  ]),
+  client_revision: z.number().int().positive(),
+});
+
+export const SubmitAttemptRequest = z.object({
+  attempt_id: z.string().uuid(),
+  submission_id: z.string().uuid(),
+});</code></pre>
+
+          <h4>Constants (<code>packages/shared/src/constants.ts</code>)</h4>
+<pre><code>export const DEFAULT_TIME_LIMIT_SEC = 2700;  // 45 min
+export const GRACE_WINDOW_SEC = 5;
+export const AUTOSAVE_INTERVAL_MS = 5000;
+export const MAX_WORD_COUNT = 350;
+export const MIN_WORD_COUNT = 20;
+export const MAX_BODY_SIZE_BYTES = 65536;    // 64 KB
+export const ENGINE_VERSION = '1.0.0';
+export const STATUS_POLL_INTERVAL_MS = 3000;</code></pre>
+
+          <h4>Utilities</h4>
+          <ul>
+            <li><code>hash.ts</code> — <code>computeSnapshotHash()</code> (SHA-256, sorted-key canonical JSON — see §8).</li>
+            <li><code>wordcount.ts</code> — <code>countWords()</code> (deterministic — see §7).</li>
+          </ul>
+
+          <h4>Error codes (<code>packages/shared/src/types/errors.ts</code>)</h4>
+<pre><code>export const ErrorCodes = {
+  INVALID_REQUEST: { http: 400, retryable: false },
+  UNAUTHORIZED: { http: 401, retryable: false },
+  FORBIDDEN: { http: 403, retryable: false },
+  ATTEMPT_NOT_FOUND: { http: 404, retryable: false },
+  ATTEMPT_EXPIRED: { http: 409, retryable: false },
+  ATTEMPT_ALREADY_SUBMITTED: { http: 409, retryable: false },
+  INVALID_TRANSITION: { http: 409, retryable: false },
+  STALE_REVISION: { http: 409, retryable: true },
+  CONCURRENT_ATTEMPT_LIMIT: { http: 409, retryable: false },
+  WORD_COUNT_EXCEEDED: { http: 422, retryable: false },
+  WORD_COUNT_BELOW_MIN: { http: 422, retryable: false },
+  PAYLOAD_TOO_LARGE: { http: 413, retryable: false },
+  RATE_LIMITED: { http: 429, retryable: true },
+  GUEST_LIMIT_REACHED: { http: 403, retryable: false },
+  SERVER_ERROR: { http: 500, retryable: true },
+  SERVICE_UNAVAILABLE: { http: 503, retryable: true },
+} as const;</code></pre>
+
+          <h4>Deliverable</h4>
+          <p>Shared package builds cleanly. Types importable from <code>apps/web</code> and <code>supabase/functions</code>.</p>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.2 (schema informs types)</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.4 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.4</span> Edge Function: <code>startAttempt</code></div>
+          <span class="step-effort">~3 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Pseudocode</h4>
+<pre><code>// supabase/functions/start-attempt/index.ts
+
+import { serve } from 'https://deno.land/std/http/server.ts';
+import { createClient } from '@supabase/supabase-js';
+
+serve(async (req) => {
+  // 1. Enforce body limit (64KB)
+  const body = await enforceBodyLimit(req);
+
+  // 2. Validate JWT → extract user_id
+  const supabase = createClient(URL, KEY, { auth: { ... } });
+  const { data: { user } } = await supabase.auth.getUser(jwt);
+  if (!user) return errorResponse('UNAUTHORIZED', 401);
+
+  // 3. Validate request body (Zod)
+  const parsed = StartAttemptRequest.safeParse(body);
+  if (!parsed.success) return errorResponse('INVALID_REQUEST', 400);
+  const { domain, year_level } = parsed.data;
+
+  // 4. BEGIN TRANSACTION (service role client)
+  const db = createServiceClient();
+
+  // 5. CONCURRENT ATTEMPT GUARD
+  const { data: activeCount } = await db.rpc('count_active_attempts', {
+    p_user_id: user.id
+  });
+  if (activeCount >= 1) return errorResponse('CONCURRENT_ATTEMPT_LIMIT', 409);
+
+  // 6. IDEMPOTENCY: check for existing started attempt (same user+domain)
+  const { data: existing } = await db.from('attempts')
+    .select('*').eq('user_id', user.id).eq('domain', domain)
+    .in('status', ['created', 'started', 'in_progress']).maybeSingle();
+  if (existing) {
+    // Return existing attempt + snapshot
+    const snapshot = await db.from('attempt_snapshots')
+      .select('*').eq('attempt_id', existing.id).single();
+    return successResponse({
+      attempt_id: existing.id,
+      snapshot: snapshot.data.snapshot_data,
+      server_now: new Date().toISOString(),
+      expires_at: existing.expires_at,
+      time_limit_sec: existing.time_limit_sec,
+    });
+  }
+
+  // 7. CONTENT SELECTION
+  //    Get items user has seen in last 50 attempts for this domain+year
+  const recentAttemptIds = await getRecentAttemptIds(db, user.id, domain, year_level, 50);
+  const seenItemIds = await getSeenItemIds(db, recentAttemptIds);
+
+  //    Select published items, excluding seen, random order
+  const seed = crypto.randomUUID();
+  const items = await selectItems(db, domain, year_level, seenItemIds, seed);
+  // items = array of { id, question_type, stem, stimulus, interaction_config, media_refs }
+  // NOTE: item_scoring_config is NOT included
+
+  // 8. BUILD SNAPSHOT
+  const snapshotData = items.map((item, idx) => ({
+    item_snapshot_id: crypto.randomUUID(),
+    position: idx,
+    question_type: item.question_type,
+    stem: item.stem,
+    stimulus: item.stimulus,
+    interaction_config: item.interaction_config,
+    media_refs: item.media_refs,
+    source_item_id: item.id, // stored in snapshot for scoring lookup
+  }));
+  const snapshotHash = computeSnapshotHash(snapshotData);
+
+  // 9. CREATE ATTEMPT + SNAPSHOT (single transaction)
+  const now = new Date();
+  const timeLimitSec = DEFAULT_TIME_LIMIT_SEC;
+  const expiresAt = new Date(now.getTime() + timeLimitSec * 1000);
+
+  const { data: attempt } = await db.from('attempts').insert({
+    user_id: user.id,
+    domain,
+    year_level,
+    status: 'started',
+    time_limit_sec: timeLimitSec,
+    started_at: now.toISOString(),
+    expires_at: expiresAt.toISOString(),
+    snapshot_hash: snapshotHash,
+    engine_version: ENGINE_VERSION,
+    randomization_seed: seed,
+  }).select().single();
+
+  await db.from('attempt_snapshots').insert({
+    attempt_id: attempt.id,
+    snapshot_data: snapshotData,
+    snapshot_hash: snapshotHash,
+  });
+
+  // 10. RETURN
+  return successResponse({
+    attempt_id: attempt.id,
+    snapshot: snapshotData,
+    server_now: now.toISOString(),
+    expires_at: expiresAt.toISOString(),
+    time_limit_sec: timeLimitSec,
+  });
+});</code></pre>
+
+          <h4>Key behaviors</h4>
+          <ul>
+            <li>Concurrent attempt guard via <code>count_active_attempts</code> with <code>FOR UPDATE</code> (serializes concurrent requests).</li>
+            <li>Idempotent: repeated call returns existing attempt without re-snapshotting.</li>
+            <li>Snapshot excludes all scoring data. <code>source_item_id</code> stored for scoring lookup but never sent to client in results.</li>
+            <li>Content selection respects no-repeat window of 50 attempts.</li>
+          </ul>
+
+          <h4>Acceptance tests</h4>
+          <ul>
+            <li>Returns attempt + snapshot with valid timer fields.</li>
+            <li>Second call with same user+domain returns same attempt (idempotent).</li>
+            <li>Second user starting while first is active: succeeds (different user).</li>
+            <li>Same user starting second domain while first is active: returns CONCURRENT_ATTEMPT_LIMIT.</li>
+            <li>Snapshot does not contain <code>correct_response</code> or <code>scoring_rules</code>.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Steps 1.2, 1.3</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.5 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.5</span> Edge Function: <code>saveResponse</code></div>
+          <span class="step-effort">~2 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Pseudocode</h4>
+<pre><code>serve(async (req) => {
+  const body = await enforceBodyLimit(req);
+  const user = await authenticateJWT(req);
+  const parsed = SaveResponseRequest.safeParse(body);
+  if (!parsed.success) return errorResponse('INVALID_REQUEST', 400);
+
+  const { attempt_id, item_snapshot_id, response_payload, client_revision } = parsed.data;
+  const db = createServiceClient();
+
+  // 1. Lock attempt row (FOR UPDATE) → serializes per-attempt writes
+  const { data: attempt } = await db.from('attempts')
+    .select('*').eq('id', attempt_id).eq('user_id', user.id).single();
+
+  if (!attempt) return errorResponse('ATTEMPT_NOT_FOUND', 404);
+
+  // 2. CHECK-ON-READ EXPIRY (F-03 primary path)
+  if (['started', 'in_progress'].includes(attempt.status) &&
+      new Date() > new Date(attempt.expires_at)) {
+    // Expire inline
+    await db.from('attempts').update({
+      status: 'expired', expired_at: new Date().toISOString()
+    }).eq('id', attempt_id);
+    return errorResponse('ATTEMPT_EXPIRED', 409);
+  }
+
+  // 3. Status check
+  if (!['started', 'in_progress'].includes(attempt.status)) {
+    return errorResponse('INVALID_TRANSITION', 409);
+  }
+
+  // 4. Validate item in snapshot
+  const { data: snapshot } = await db.from('attempt_snapshots')
+    .select('snapshot_data').eq('attempt_id', attempt_id).single();
+  const validItem = snapshot.snapshot_data.some(
+    (item: any) => item.item_snapshot_id === item_snapshot_id
+  );
+  if (!validItem) return errorResponse('INVALID_REQUEST', 400);
+
+  // 5. ATOMIC CONDITIONAL UPSERT (F-02)
+  const { data: result } = await db.rpc('upsert_response', {
+    p_attempt_id: attempt_id,
+    p_item_snapshot_id: item_snapshot_id,
+    p_response_payload: response_payload,
+    p_client_revision: client_revision,
+  });
+  // SQL function returns rows_affected
+
+  if (result.rows_affected === 0) {
+    return errorResponse('STALE_REVISION', 409);
+  }
+
+  // 6. Optionally move to in_progress
+  if (attempt.status === 'started') {
+    await db.from('attempts')
+      .update({ status: 'in_progress' }).eq('id', attempt_id);
+  }
+
+  return successResponse({ saved: true, server_revision: client_revision });
+});</code></pre>
+
+          <h4>SQL function for atomic upsert</h4>
+<pre><code>CREATE FUNCTION upsert_response(
+  p_attempt_id uuid,
+  p_item_snapshot_id uuid,
+  p_response_payload jsonb,
+  p_client_revision int
+) RETURNS TABLE(rows_affected int) AS $$
+  WITH upserted AS (
+    INSERT INTO attempt_responses
+      (attempt_id, item_snapshot_id, response_payload, client_revision, saved_at)
+    VALUES (p_attempt_id, p_item_snapshot_id, p_response_payload, p_client_revision, now())
+    ON CONFLICT (attempt_id, item_snapshot_id)
+    DO UPDATE SET
+      response_payload = EXCLUDED.response_payload,
+      client_revision  = EXCLUDED.client_revision,
+      saved_at         = now()
+    WHERE attempt_responses.client_revision < EXCLUDED.client_revision
+    RETURNING 1
+  )
+  SELECT count(*)::int AS rows_affected FROM upserted;
+$$ LANGUAGE sql;</code></pre>
+
+          <h4>Acceptance tests</h4>
+          <ul>
+            <li>Save with revision 1 → success.</li>
+            <li>Save same item with revision 2 → success (overwrites).</li>
+            <li>Save same item with revision 1 again → STALE_REVISION.</li>
+            <li>Save to expired attempt → ATTEMPT_EXPIRED (check-on-read triggers inline).</li>
+            <li>Save to submitted attempt → INVALID_TRANSITION.</li>
+            <li>Save with item not in snapshot → INVALID_REQUEST.</li>
+            <li>Payload > 64KB → PAYLOAD_TOO_LARGE.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.4</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.6 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.6</span> Edge Function: <code>submitAttempt</code> + Scoring Worker</div>
+          <span class="step-effort">~3 days</span>
+        </div>
+        <div class="step-body">
+          <h4>submitAttempt pseudocode</h4>
+<pre><code>serve(async (req) => {
+  const body = await enforceBodyLimit(req);
+  const user = await authenticateJWT(req);
+  const parsed = SubmitAttemptRequest.safeParse(body);
+
+  const { attempt_id, submission_id } = parsed.data;
+  const db = createServiceClient();
+
+  // 1. IDEMPOTENCY: check if already submitted with this submission_id
+  const { data: attempt } = await db.from('attempts')
+    .select('*').eq('id', attempt_id).eq('user_id', user.id).single();
+
+  if (!attempt) return errorResponse('ATTEMPT_NOT_FOUND', 404);
+  if (attempt.submission_id === submission_id) {
+    // Already submitted — return current status
+    return successResponse({ status: attempt.status });
+  }
+  if (['submitted','scored'].includes(attempt.status)) {
+    return errorResponse('ATTEMPT_ALREADY_SUBMITTED', 409);
+  }
+
+  // 2. Validate status + grace window
+  if (!['started','in_progress'].includes(attempt.status)) {
+    return errorResponse('INVALID_TRANSITION', 409);
+  }
+  const graceExpiry = new Date(
+    new Date(attempt.expires_at).getTime() + GRACE_WINDOW_SEC * 1000
+  );
+  if (new Date() > graceExpiry) {
+    return errorResponse('ATTEMPT_EXPIRED', 409);
+  }
+
+  // 3. SUBMIT (atomic)
+  await db.from('attempts').update({
+    status: 'submitted',
+    submitted_at: new Date().toISOString(),
+    submission_id: submission_id,
+  }).eq('id', attempt_id);
+
+  // 4. ENQUEUE SCORING JOB (idempotent)
+  await db.from('scoring_jobs').insert({
+    attempt_id: attempt_id,
+    idempotency_key: submission_id,
+    job_type: 'objective',
+  }).onConflict('idempotency_key').ignore();
+
+  // 5. TRIGGER WORKER (pg_notify or direct call)
+  await db.rpc('notify_scoring', { p_attempt_id: attempt_id });
+
+  // 6. RETURN IMMEDIATELY — do NOT wait for scoring
+  return successResponse({
+    status: 'submitted',
+    message: 'Scoring in progress...',
+  });
+});</code></pre>
+
+          <h4>Scoring worker (<code>supabase/functions/scoring-worker/index.ts</code>)</h4>
+<pre><code>// Called via pg_notify listener, cron, or HTTP trigger
+
+async function processNextScoringJob(db: SupabaseClient) {
+  // 1. Pick job (FOR UPDATE SKIP LOCKED)
+  const { data: job } = await db.rpc('pick_scoring_job');
+  if (!job) return; // No pending jobs
+
+  try {
+    // 2. Load attempt
+    const { data: attempt } = await db.from('attempts')
+      .select('*').eq('id', job.attempt_id).single();
+
+    // Already scored? Mark job done.
+    if (attempt.status === 'scored') {
+      await db.from('scoring_jobs').update({
+        status: 'completed', completed_at: new Date().toISOString()
+      }).eq('id', job.id);
+      return;
+    }
+
+    // 3. Load responses
+    const { data: responses } = await db.from('attempt_responses')
+      .select('*').eq('attempt_id', job.attempt_id);
+
+    // 4. Load snapshot (to get source_item_ids)
+    const { data: snapshot } = await db.from('attempt_snapshots')
+      .select('snapshot_data').eq('attempt_id', job.attempt_id).single();
+
+    // 5. Load scoring configs for all source items
+    const sourceItemIds = snapshot.snapshot_data.map(
+      (s: any) => s.source_item_id
+    );
+    const { data: configs } = await db.from('item_scoring_config')
+      .select('*').in('item_id', sourceItemIds);
+
+    // 6. SCORE EACH ITEM
+    const itemResults = [];
+    let correctCount = 0;
+
+    for (const snapItem of snapshot.snapshot_data) {
+      const response = responses.find(
+        (r: any) => r.item_snapshot_id === snapItem.item_snapshot_id
+      );
+      const config = configs.find(
+        (c: any) => c.item_id === snapItem.source_item_id
+      );
+
+      const isCorrect = evaluateResponse(
+        snapItem.question_type,
+        response?.response_payload,
+        config
+      );
+
+      itemResults.push({
+        attempt_id: job.attempt_id,
+        item_snapshot_id: snapItem.item_snapshot_id,
+        is_correct: isCorrect,
+        score_awarded: isCorrect ? config.max_score : 0,
+        max_score: config.max_score,
+      });
+
+      if (isCorrect) correctCount++;
+    }
+
+    // 7. PERSIST RESULTS
+    await db.from('attempt_item_results').insert(itemResults);
+
+    const totalItems = snapshot.snapshot_data.length;
+    await db.from('attempt_results').insert({
+      attempt_id: job.attempt_id,
+      domain: attempt.domain,
+      year_level: attempt.year_level,
+      total_items: totalItems,
+      correct_count: correctCount,
+      score_raw: correctCount,
+      score_pct: totalItems > 0 ? (correctCount / totalItems) * 100 : 0,
+      band_estimate: computeBand(correctCount, totalItems),
+      engine_version: ENGINE_VERSION,
+    });
+
+    // 8. TRANSITION → scored
+    await db.from('attempts').update({
+      status: 'scored',
+      scored_at: new Date().toISOString(),
+    }).eq('id', job.attempt_id);
+
+    // 9. MARK JOB COMPLETED
+    await db.from('scoring_jobs').update({
+      status: 'completed', completed_at: new Date().toISOString()
+    }).eq('id', job.id);
+
+  } catch (error) {
+    // Retry or dead-letter
+    const newRetries = job.retries + 1;
+    if (newRetries >= job.max_retries) {
+      await db.from('scoring_jobs').update({
+        status: 'dead', last_error: error.message
+      }).eq('id', job.id);
+      await db.from('dead_letter_queue').insert({
+        source_table: 'scoring_jobs', source_id: job.id,
+        error: error.message, payload: job,
+      });
+    } else {
+      await db.from('scoring_jobs').update({
+        status: 'pending', retries: newRetries,
+        last_error: error.message, started_at: null,
+      }).eq('id', job.id);
+    }
+  }
+}
+
+function evaluateResponse(
+  questionType: string,
+  responsePayload: any,
+  config: any
+): boolean {
+  if (!responsePayload || !config) return false;
+
+  switch (questionType) {
+    case 'mcq':
+      return responsePayload.selected_option_id ===
+        config.correct_response.correct_option_id;
+    case 'short_text':
+      return normalizeText(responsePayload.text) ===
+        normalizeText(config.correct_response.text);
+    default:
+      return false; // Other types in later phases
+  }
+}
+
+function normalizeText(text: string): string {
+  return text.toLowerCase().trim().replace(/\s+/g, ' ');
+}</code></pre>
+
+          <h4>SQL helper for job pickup</h4>
+<pre><code>CREATE FUNCTION pick_scoring_job()
+RETURNS scoring_jobs AS $$
+  UPDATE scoring_jobs SET
+    status = 'processing',
+    started_at = now()
+  WHERE id = (
+    SELECT id FROM scoring_jobs
+    WHERE status = 'pending'
+    ORDER BY created_at ASC
+    LIMIT 1
+    FOR UPDATE SKIP LOCKED
+  )
+  RETURNING *;
+$$ LANGUAGE sql;</code></pre>
+
+          <h4>Acceptance tests</h4>
+          <ul>
+            <li>Submit returns in &lt;500ms (no scoring wait).</li>
+            <li>Scoring worker completes within 10s for 30 items.</li>
+            <li>Attempt transitions: submitted → scored after worker runs.</li>
+            <li>Double submit (same submission_id): no duplicate job created.</li>
+            <li>Submit after expiry (beyond grace): ATTEMPT_EXPIRED.</li>
+            <li>Worker failure: job retried up to max_retries, then moved to DLQ.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.5</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.7 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.7</span> Edge Function: <code>getAttemptStatus</code></div>
+          <span class="step-effort">~0.5 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Purpose</h4>
+          <p>Lightweight polling endpoint for the client to check attempt status (especially for scoring completion and expiry detection).</p>
+
+<pre><code>serve(async (req) => {
+  const user = await authenticateJWT(req);
+  const attemptId = getUrlParam(req, 'id');
+
+  const db = createServiceClient();
+  const { data: attempt } = await db.from('attempts')
+    .select('id, status, expires_at, scored_at, auto_submitted')
+    .eq('id', attemptId).eq('user_id', user.id).single();
+
+  if (!attempt) return errorResponse('ATTEMPT_NOT_FOUND', 404);
+
+  // Check-on-read expiry
+  if (['started','in_progress'].includes(attempt.status) &&
+      new Date() > new Date(attempt.expires_at)) {
+    await db.from('attempts').update({
+      status: 'expired', expired_at: new Date().toISOString()
+    }).eq('id', attemptId);
+    return successResponse({ status: 'expired' });
+  }
+
+  return successResponse({
+    status: attempt.status,
+    scored_at: attempt.scored_at,
+    auto_submitted: attempt.auto_submitted,
+  });
+});</code></pre>
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.4</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.8 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.8</span> Frontend: Exam Shell &amp; State Management</div>
+          <span class="step-effort">~3 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Zustand store</h4>
+<pre><code>// stores/examStore.ts
+import { create } from 'zustand';
+
+interface ExamState {
+  attempt: Attempt | null;
+  snapshot: SnapshotItem[];
+  responses: Map&lt;string, { payload: any; revision: number }&gt;;
+  currentIndex: number;
+  timerRemainingSec: number;
+  serverDriftMs: number;
+  flaggedItems: Set&lt;string&gt;;
+
+  setAttempt: (attempt: Attempt, snapshot: SnapshotItem[], serverNow: string) => void;
+  setResponse: (itemSnapshotId: string, payload: any) => void;
+  setCurrentIndex: (index: number) => void;
+  toggleFlag: (itemSnapshotId: string) => void;
+  decrementTimer: () => void;
+}
+
+export const useExamStore = create&lt;ExamState&gt;((set, get) => ({
+  attempt: null,
+  snapshot: [],
+  responses: new Map(),
+  currentIndex: 0,
+  timerRemainingSec: 0,
+  serverDriftMs: 0,
+  flaggedItems: new Set(),
+
+  setAttempt: (attempt, snapshot, serverNow) => {
+    const drift = new Date(serverNow).getTime() - Date.now();
+    const remaining = Math.max(0,
+      Math.floor((new Date(attempt.expires_at!).getTime() - Date.now() - drift) / 1000)
+    );
+    set({ attempt, snapshot, serverDriftMs: drift, timerRemainingSec: remaining });
+  },
+
+  setResponse: (itemSnapshotId, payload) => {
+    const responses = new Map(get().responses);
+    const existing = responses.get(itemSnapshotId);
+    const revision = (existing?.revision ?? 0) + 1;
+    responses.set(itemSnapshotId, { payload, revision });
+    set({ responses });
+  },
+
+  setCurrentIndex: (index) => set({ currentIndex: index }),
+  toggleFlag: (id) => {
+    const flags = new Set(get().flaggedItems);
+    flags.has(id) ? flags.delete(id) : flags.add(id);
+    set({ flaggedItems: flags });
+  },
+  decrementTimer: () => set((s) => ({
+    timerRemainingSec: Math.max(0, s.timerRemainingSec - 1)
+  })),
+}));</code></pre>
+
+          <h4>Components to build</h4>
+          <ul>
+            <li><strong><code>ExamShell</code></strong> — Layout: header (timer + progress bar + save indicator), main (question area), footer (Prev/Next + question strip).</li>
+            <li><strong><code>Timer</code></strong> — Displays countdown using <code>timerRemainingSec</code>. Decrements every 1s via <code>setInterval</code>. Warning states at 5min (amber) and 1min (red). Prompts submit at 0.</li>
+            <li><strong><code>QuestionStrip</code></strong> — Horizontal scrollable row of numbered circles. Filled = answered, outlined = unanswered, flagged = bookmark icon. Click navigates.</li>
+            <li><strong><code>SubmitModal</code></strong> — Shows answered/unanswered/flagged counts. "Submit" and "Keep Working" buttons. Double-click protection via loading state.</li>
+            <li><strong><code>ScoringWaitScreen</code></strong> — Shows after submit. Polls <code>getAttemptStatus</code> every 3s (or Supabase Realtime subscription). Spinner + "Scoring your exam…". Navigates to results when <code>scored</code>.</li>
+          </ul>
+
+          <h4>React Query hooks</h4>
+<pre><code>// hooks/useStartAttempt.ts
+export function useStartAttempt() {
+  return useMutation({
+    mutationFn: async ({ domain, year_level }: StartAttemptRequest) => {
+      const { data } = await supabase.functions.invoke('start-attempt', {
+        body: { domain, year_level },
+      });
+      return data;
+    },
+  });
+}
+
+// hooks/useSaveResponse.ts — mutateAsync called by autosave
+// hooks/useSubmitAttempt.ts — mutateAsync with submission_id
+// hooks/useAttemptStatus.ts — useQuery with refetchInterval: 3000</code></pre>
+
+          <div class="step-deps"><strong>Depends on:</strong> Steps 1.3, 1.4</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.9 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.9</span> Frontend: Question Renderers (MCQ + Short Text)</div>
+          <span class="step-effort">~2–3 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Components</h4>
+          <ul>
+            <li><strong><code>QuestionRenderer</code></strong> — Dispatcher: reads <code>question_type</code> from current snapshot item, renders the right sub-component.</li>
+            <li><strong><code>MCQRenderer</code></strong>:
+              <ul>
+                <li>Displays stimulus (if present) above stem.</li>
+                <li>Renders options as radio buttons (order from snapshot — no re-randomization).</li>
+                <li>On selection: calls <code>examStore.setResponse(itemSnapshotId, { selected_option_id })</code>.</li>
+                <li>Restores previous selection from store on mount.</li>
+              </ul>
+            </li>
+            <li><strong><code>ShortTextRenderer</code></strong>:
+              <ul>
+                <li>Displays stimulus + stem.</li>
+                <li>Single-line <code>&lt;input&gt;</code> with max 1000 chars.</li>
+                <li>On change/blur: calls <code>setResponse(id, { text })</code>.</li>
+                <li>Restores previous value on mount.</li>
+              </ul>
+            </li>
+          </ul>
+
+          <h4>Accessibility</h4>
+          <ul>
+            <li>Radio buttons: <code>role="radiogroup"</code>, <code>aria-label</code> for question stem.</li>
+            <li>Keyboard: arrow keys navigate options, Enter selects, Tab moves between questions.</li>
+            <li>Focus management: auto-focus first interactive element when navigating to a new question.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.8</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.10 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.10</span> Frontend: Autosave</div>
+          <span class="step-effort">~2 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Autosave manager</h4>
+<pre><code>// hooks/useAutosave.ts
+export function useAutosave() {
+  const { attempt, responses } = useExamStore();
+  const saveResponse = useSaveResponse();
+  const pendingRef = useRef&lt;Map&lt;string, { payload: any; revision: number }&gt;&gt;(new Map());
+  const savingRef = useRef(false);
+
+  // Track dirty responses
+  useEffect(() => {
+    const unsub = useExamStore.subscribe((state, prev) => {
+      for (const [id, resp] of state.responses) {
+        const prev_resp = prev.responses.get(id);
+        if (!prev_resp || prev_resp.revision !== resp.revision) {
+          pendingRef.current.set(id, resp);
+        }
+      }
+    });
+    return unsub;
+  }, []);
+
+  // Flush every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (savingRef.current || pendingRef.current.size === 0) return;
+      savingRef.current = true;
+
+      for (const [itemId, { payload, revision }] of pendingRef.current) {
+        try {
+          await saveResponse.mutateAsync({
+            attempt_id: attempt!.id,
+            item_snapshot_id: itemId,
+            response_payload: payload,
+            client_revision: revision,
+          });
+          pendingRef.current.delete(itemId);
+        } catch (err: any) {
+          if (err.code === 'STALE_REVISION') {
+            pendingRef.current.delete(itemId); // Will re-queue on next change
+          } else if (err.code === 'ATTEMPT_EXPIRED') {
+            // Navigate to expired screen
+            navigateToExpired();
+          }
+          // Other errors: keep in pending for next cycle
+        }
+      }
+      savingRef.current = false;
+    }, AUTOSAVE_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [attempt?.id]);
+}</code></pre>
+
+          <h4>Offline buffer (Dexie.js)</h4>
+          <ul>
+            <li>When network fails: queue saves into IndexedDB via Dexie.</li>
+            <li>On reconnect: replay queued saves in order (by revision).</li>
+            <li>Dexie schema: <code>{ attempt_id, item_snapshot_id, response_payload, client_revision, queued_at }</code></li>
+          </ul>
+
+          <h4>Save indicator</h4>
+          <p>Header shows: "Saving…" (during save) → "Saved ✓" (for 2s after success) → hidden. Amber dot if offline saves pending.</p>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.9</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.11 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.11</span> Frontend: Results Screen</div>
+          <span class="step-effort">~2 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Components</h4>
+          <ul>
+            <li><strong><code>ResultsPage</code></strong>:
+              <ul>
+                <li>Fetches <code>attempt_results</code> + <code>attempt_item_results</code> via Supabase client (RLS allows own-attempt read).</li>
+                <li>Summary card: score (X / Y correct), percentage, band estimate.</li>
+                <li>Per-question breakdown: list of questions showing correct ✓ or incorrect ✗ (no answer reveal in Phase 1).</li>
+                <li>Practice disclaimer label.</li>
+                <li>"Start New Exam" button → exam selection.</li>
+              </ul>
+            </li>
+            <li><strong><code>ExamSelectionPage</code></strong>: Pick domain + year level → calls <code>startAttempt</code>. Shows previous attempts history.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Steps 1.6, 1.8</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.12 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.12</span> Expiry Sweeper + Anti-Cheat Logging</div>
+          <span class="step-effort">~1.5 days</span>
+        </div>
+        <div class="step-body">
+          <h4>Expiry sweeper (pg_cron fallback)</h4>
+<pre><code>-- Run every 60 seconds
+SELECT cron.schedule('expire-attempts', '* * * * *',
+  $$UPDATE attempts
+    SET status = 'expired', expired_at = now()
+    WHERE status IN ('started','in_progress')
+    AND expires_at < now() - INTERVAL '5 seconds'$$
+);</code></pre>
+          <p class="muted">Primary expiry detection is check-on-read in Edge Functions (Steps 1.5, 1.7). This is a safety net.</p>
+
+          <h4>Anti-cheat event logging (passive)</h4>
+          <ul>
+            <li>Create <code>anticheat_events</code> table (append-only): <code>attempt_id, event_type, client_event_seq, client_event_ts_ms, server_received_at</code>.</li>
+            <li><code>logAnalyticsEvent</code> Edge Function: validates attempt, inserts event, updates counters on attempt (focus_loss_count, etc.).</li>
+            <li>Client detects: <code>visibilitychange</code>, <code>fullscreenchange</code>, <code>contextmenu</code>. Sends with monotonic sequence.</li>
+            <li><strong>Phase 1:</strong> Log only — no warnings, no auto-submit.</li>
+          </ul>
+
+          <div class="step-deps"><strong>Depends on:</strong> Step 1.2</div>
+        </div>
+      </div>
+
+      <!-- ═══════ STEP 1.13 ═══════ -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-title"><span class="step-num">1.13</span> Testing &amp; QA</div>
+          <span class="step-effort">~4–5 days</span>
+        </div>
+        <div class="step-body">
+
+          <h4>Unit tests (Vitest)</h4>
+          <ul>
+            <li>Zod schema validation: all valid + invalid payloads including size limits.</li>
+            <li><code>countWords()</code>: edge cases (empty, single word, punctuation-only, newlines).</li>
+            <li><code>computeSnapshotHash()</code>: produces same hash regardless of key order.</li>
+            <li>State transition function: all valid transitions pass, all invalid raise.</li>
+            <li>Autosave revision logic: higher revision wins, equal/lower rejected.</li>
+          </ul>
+
+          <h4>Integration tests (Vitest + Supabase local)</h4>
+          <ul>
+            <li>Full lifecycle: startAttempt → saveResponse ×N → submitAttempt → worker scores → status=scored.</li>
+            <li><strong>F-02:</strong> Two concurrent saves for same item with revisions (5, 4): revision 5 persisted.</li>
+            <li><strong>F-05:</strong> Second attempt while first active → 409 CONCURRENT_ATTEMPT_LIMIT.</li>
+            <li><strong>F-06:</strong> Triple submit → exactly 1 scoring job.</li>
+            <li>Save to expired attempt → 409 ATTEMPT_EXPIRED (check-on-read).</li>
+            <li>RLS: student SELECT on <code>item_scoring_config</code> → empty result.</li>
+            <li><strong>F-09:</strong> 100KB payload → 413. 1001-char short_text → 400.</li>
+          </ul>
+
+          <h4>E2E tests (Playwright)</h4>
+          <ul>
+            <li><strong>Happy path:</strong> Login → select exam → answer 5 questions → submit → wait for scoring → view results.</li>
+            <li><strong>Timer:</strong> Timer displays and counts down correctly.</li>
+            <li><strong>Autosave:</strong> "Saved ✓" indicator appears after answering.</li>
+            <li><strong>Navigation:</strong> Prev/Next, question strip click, flag for review.</li>
+            <li><strong>Submit idempotency:</strong> Double-click submit → no error, single submission.</li>
+          </ul>
+
+          <h4>Chaos &amp; failure tests (Playwright + mocks)</h4>
+          <ul>
+            <li><strong>Network failure mid-autosave:</strong> Disconnect after 3 saves → verify Dexie buffer → reconnect → verify replay + correct final state.</li>
+            <li><strong>Submit timeout:</strong> Mock 504 → verify 3 retries with backoff → error message shown.</li>
+            <li><strong>Concurrent submit race:</strong> Two tabs submit simultaneously → one succeeds, other gets ALREADY_SUBMITTED.</li>
+            <li><strong>Expired attempt:</strong> Fast-forward past expires_at → next save/poll triggers expiry → "exam ended" screen.</li>
+            <li><strong>Kill switch:</strong> Toggle <code>maintenance_mode</code> → in-progress exam continues, new start blocked.</li>
+          </ul>
+
+          <h4>Manual QA</h4>
+          <ul>
+            <li>Cross-browser: Chrome, Safari, Firefox.</li>
+            <li>Mobile viewport: responsive layout, touch targets.</li>
+            <li>Accessibility: keyboard-only navigation, screen reader check (basic).</li>
+          </ul>
+
+          <h4>Deliverable</h4>
+          <p>All tests green. No P0 bugs. Phase 1 ready for internal demo and stakeholder review.</p>
+
+          <div class="step-deps"><strong>Depends on:</strong> All prior steps</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── SECTION 20 ─── -->
+  <section class="section" id="s20">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-placeholder">20</span> Phases 2–5: Placeholders</h2>
+      <span class="section-badge badge-placeholder">PLACEHOLDER</span>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <div class="phase-banner phase-future">
+        <div>
+          <h3>Phase 2 — Writing Module + Anti-Cheat Enforcement</h3>
+          <p class="phase-meta">~4–6 weeks after Phase 1</p>
+        </div>
+      </div>
+      <ul>
+        <li>Writing editor (plain text, paste disabled, spellcheck off)</li>
+        <li>Server-side word count validation (save + submit)</li>
+        <li>Writing evaluation pipeline (heuristic or LLM-based, async via scoring_jobs)</li>
+        <li>Anti-cheat threshold enforcement (warnings + auto-submit)</li>
+        <li>Fullscreen mode with exit detection</li>
+        <li>Additional question types: multi_select, numeric</li>
+        <li>Content safety scanning for writing submissions (tool/API selection)</li>
+      </ul>
+
+      <div class="phase-banner phase-future">
+        <div>
+          <h3>Phase 3 — Guest Mode + Scalability + Ops Hardening</h3>
+          <p class="phase-meta">~4–5 weeks after Phase 2</p>
+        </div>
+      </div>
+      <ul>
+        <li>Guest attempt creation + HMAC challenge-response verification</li>
+        <li>Guest session tokens (15-min, attempt-bound, non-renewable)</li>
+        <li>Device ID tracking + guest cap enforcement</li>
+        <li>Event-driven async ingestion pipeline (pg_notify → persistent worker)</li>
+        <li>Tiered feature flag cache (10s/60s) + Realtime subscription + admin flush</li>
+        <li>DLQ monitoring + webhook alerting + admin queue-health endpoint</li>
+        <li>Rate limiting implementation on all Edge Functions</li>
+        <li>Load testing (k6/Artillery): 5,000 concurrent exams</li>
+      </ul>
+
+      <div class="phase-banner phase-future">
+        <div>
+          <h3>Phase 4 — Adaptive Routing + Advanced Question Types</h3>
+          <p class="phase-meta">~4–5 weeks after Phase 3</p>
+        </div>
+      </div>
+      <ul>
+        <li>Multi-stage testlet routing (Stage 1 → routing decision → Stage 2)</li>
+        <li>Routing thresholds in scoring_config</li>
+        <li>Drag-drop, inline-dropdown, order question renderers</li>
+        <li>Rich content rendering (images, tables, math/LaTeX, stimulus groups)</li>
+        <li>Media asset management (signed URLs, storage policies)</li>
+        <li>Mobile touch optimization for interactive question types</li>
+      </ul>
+
+      <div class="phase-banner phase-future">
+        <div>
+          <h3>Phase 5 — Reporting, Admin &amp; Production Hardening</h3>
+          <p class="phase-meta">~4–6 weeks after Phase 4</p>
+        </div>
+      </div>
+      <ul>
+        <li>Teacher/parent dashboards (student progress, domain analysis)</li>
+        <li>Admin panel (item bank, attempt review, invalidation, flag management)</li>
+        <li>Structured logging + Supabase dashboard alerts + telemetry sampling</li>
+        <li>Audit log viewer for admins</li>
+        <li>Data retention + Australian Privacy Act deletion policies</li>
+        <li>WCAG 2.1 AA accessibility audit</li>
+        <li>Mobile optimisation pass</li>
+        <li>Production deployment (Supabase Pro, custom domain, CDN)</li>
+        <li>Go/no-go checklist</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 21 ─── -->
+  <section class="section" id="s21">
+    <div class="section-head" onclick="toggleSection(this)">
+      <h2><span class="section-num num-impl">21</span> Readiness Checklist</h2>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="section-body" contenteditable="true">
+
+      <h3>Phase 1 completion criteria</h3>
+      <table>
+        <thead><tr><th style="width:40px">✓</th><th>Criterion</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>☐</td><td>Student can sign up, log in, start an exam</td><td>E2E test: login → startAttempt</td></tr>
+          <tr><td>☐</td><td>MCQ + short_text questions render from snapshot</td><td>E2E test: questions display correctly</td></tr>
+          <tr><td>☐</td><td>Timer counts down accurately (drift-corrected)</td><td>E2E test: timer matches server time ±2s</td></tr>
+          <tr><td>☐</td><td>Responses autosave every 5s with "Saved ✓" indicator</td><td>E2E test: save indicator + DB verification</td></tr>
+          <tr><td>☐</td><td>Offline saves queue and replay on reconnect</td><td>Chaos test: network failure → recovery</td></tr>
+          <tr><td>☐</td><td>Submit completes within 500ms (async scoring)</td><td>Integration test: submit latency &lt; 500ms</td></tr>
+          <tr><td>☐</td><td>Scoring worker produces correct results</td><td>Integration test: known answers → expected scores</td></tr>
+          <tr><td>☐</td><td>Results screen shows score + per-question breakdown</td><td>E2E test: results page renders</td></tr>
+          <tr><td>☐</td><td>Concurrent attempt limit enforced (max 1)</td><td>Integration test: second attempt → 409</td></tr>
+          <tr><td>☐</td><td>Stale revision rejected atomically</td><td>Integration test: concurrent writes</td></tr>
+          <tr><td>☐</td><td>Expired attempts detected via check-on-read</td><td>Integration test: save after expiry → 409</td></tr>
+          <tr><td>☐</td><td>Payload size limits enforced (64KB + field limits)</td><td>Integration test: oversized → 413</td></tr>
+          <tr><td>☐</td><td>Student cannot access item_scoring_config via RLS</td><td>Integration test: SELECT returns empty</td></tr>
+          <tr><td>☐</td><td>Anti-cheat events logged (passive)</td><td>Manual: trigger focus loss → verify DB row</td></tr>
+          <tr><td>☐</td><td>State transition trigger rejects invalid transitions</td><td>Unit test: all invalid combos raise exception</td></tr>
+          <tr><td>☐</td><td>Snapshot immutability trigger prevents updates</td><td>Integration test: UPDATE → exception</td></tr>
+          <tr><td>☐</td><td>Double-submit is idempotent (single scoring job)</td><td>Integration test: triple submit → 1 job</td></tr>
+          <tr><td>☐</td><td>All unit + integration + E2E + chaos tests green</td><td>CI pipeline: all stages pass</td></tr>
+          <tr><td>☐</td><td>Cross-browser QA (Chrome, Safari, Firefox)</td><td>Manual QA: screenshots/notes</td></tr>
+          <tr><td>☐</td><td>Mobile viewport responsive</td><td>Manual QA: mobile device/emulator</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Audit compliance check</h3>
+      <table>
+        <thead><tr><th style="width:60px">Finding</th><th>Status in Phase 1</th><th style="width:40px">✓</th></tr></thead>
+        <tbody>
+          <tr><td>F-01</td><td>Async scoring via scoring_jobs queue</td><td>☐</td></tr>
+          <tr><td>F-02</td><td>Atomic conditional upsert in SQL</td><td>☐</td></tr>
+          <tr><td>F-03</td><td>Check-on-read expiry (primary) + pg_cron fallback</td><td>☐</td></tr>
+          <tr><td>F-04</td><td>Deferred to Phase 3 (guest mode)</td><td>—</td></tr>
+          <tr><td>F-05</td><td>Concurrent attempt limit enforced</td><td>☐</td></tr>
+          <tr><td>F-06</td><td>Scoring job idempotency via submission_id</td><td>☐</td></tr>
+          <tr><td>F-07</td><td>Deferred to Phase 3 (tiered cache)</td><td>—</td></tr>
+          <tr><td>F-08</td><td>All hot-path indexes created</td><td>☐</td></tr>
+          <tr><td>F-09</td><td>64KB body limit + per-field Zod limits</td><td>☐</td></tr>
+          <tr><td>F-10</td><td>Deferred to Phase 3 (DLQ alerting)</td><td>—</td></tr>
+          <tr><td>F-11</td><td>SHA-256 canonicalized hash in shared utility</td><td>☐</td></tr>
+          <tr><td>F-12</td><td>Chaos tests in E2E suite</td><td>☐</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- FOOTER                                  -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="doc-footer">
+    MindMosaic Production Spec v4.0 — Final · All sections editable in-place · Save as <code>mindmosaic-spec-v4.html</code>
+  </div>
+
+</div><!-- /.page -->
+
+<script>
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  body.classList.toggle('collapsed');
+  chevron.classList.toggle('open');
+}
+</script>
+</body>
+</html>

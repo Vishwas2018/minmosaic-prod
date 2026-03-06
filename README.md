@@ -7,7 +7,6 @@ Online NAPLAN-style practice assessment platform for Australian students (Years 
 ### Prerequisites
 - Node.js 20+
 - pnpm 9+
-- Docker (for Supabase local)
 - Supabase CLI (`brew install supabase/tap/supabase` or `npm install -g supabase`)
 
 ### Setup
@@ -16,20 +15,26 @@ Online NAPLAN-style practice assessment platform for Australian students (Years 
 # Install dependencies
 pnpm install
 
-# Start Supabase local (Docker must be running)
-pnpm db:start
-
-# Copy env template and fill in keys from `supabase status`
+# Copy env template and fill in cloud project keys
 cp apps/web/.env.local.example apps/web/.env.local
 
-# Reset DB (creates tables, seeds data)
-pnpm db:reset
+# Push migrations to the linked cloud project
+pnpm db:push
 
 # Start dev server
 pnpm dev
 ```
 
-App runs at `http://localhost:3000`. Supabase Studio at `http://localhost:54323`.
+App runs at `http://localhost:3000`.
+
+## Supabase
+
+This project uses cloud-hosted Supabase only. Do not run local Supabase commands such as
+`supabase start` or `supabase db reset`.
+
+- Apply schema changes with `supabase db push --linked`
+- Deploy Edge Functions with `supabase functions deploy <name> --project-ref <project-ref>`
+- Apply seed SQL through the Supabase Dashboard SQL Editor
 
 ## Project Structure
 
@@ -53,9 +58,7 @@ mindmosaic/
 | `pnpm test` | Run unit + integration tests |
 | `pnpm lint` | Lint all packages |
 | `pnpm type-check` | TypeScript check all packages |
-| `pnpm db:start` | Start Supabase local |
-| `pnpm db:reset` | Reset DB + run migrations + seed |
-| `pnpm db:stop` | Stop Supabase local |
+| `pnpm db:push` | Push migrations to linked cloud Supabase |
 
 ## Phase 1 Scope
 

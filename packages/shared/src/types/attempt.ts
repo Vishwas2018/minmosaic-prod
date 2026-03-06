@@ -60,6 +60,9 @@ export interface SnapshotItem {
   stimulus?: Record<string, unknown> | null;
   interaction_config: Record<string, unknown>;
   media_refs?: Record<string, string> | null;
+}
+
+export interface ServerSnapshotItem extends SnapshotItem {
   source_item_id: string;
 }
 

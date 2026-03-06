@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { StartAttemptRequest, SaveResponseRequest, SubmitAttemptRequest } from '../schemas/api';
+import { describe, expect, it } from 'vitest';
+import { SaveResponseRequest, StartAttemptRequest, SubmitAttemptRequest } from '../schemas/api';
 
 describe('StartAttemptRequest', () => {
   it('accepts valid request', () => {
@@ -89,7 +89,7 @@ describe('SubmitAttemptRequest', () => {
   });
 });
 
-describe('SaveResponseRequest — numeric', () => {
+describe('SaveResponseRequest - numeric', () => {
   const base = {
     attempt_id: '550e8400-e29b-41d4-a716-446655440000',
     item_snapshot_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -113,7 +113,7 @@ describe('SaveResponseRequest — numeric', () => {
   });
 });
 
-describe('SaveResponseRequest — multi_select', () => {
+describe('SaveResponseRequest - multi_select', () => {
   const base = {
     attempt_id: '550e8400-e29b-41d4-a716-446655440000',
     item_snapshot_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -137,10 +137,58 @@ describe('SaveResponseRequest — multi_select', () => {
   });
 
   it('rejects multi_select exceeding max options', () => {
-    const ids = Array.from({ length: 21 }, (_, i) => `opt-${i}`);
+    const ids = Array.from({ length: 21 }, (_, index) => `opt-${index}`);
     const result = SaveResponseRequest.safeParse({
       ...base,
       response_payload: { type: 'multi_select', selected_option_ids: ids },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('SaveResponseRequest - all response types edge cases', () => {
+  const base = {
+    attempt_id: '550e8400-e29b-41d4-a716-446655440000',
+    item_snapshot_id: '550e8400-e29b-41d4-a716-446655440001',
+    client_revision: 2,
+  };
+
+  it('accepts numeric values as strings', () => {
+    const result = SaveResponseRequest.safeParse({
+      ...base,
+      response_payload: { type: 'numeric', value: '9.2' },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts multi_select with one option', () => {
+    const result = SaveResponseRequest.safeParse({
+      ...base,
+      response_payload: { type: 'multi_select', selected_option_ids: ['a'] },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects mcq with empty selected_option_id', () => {
+    const result = SaveResponseRequest.safeParse({
+      ...base,
+      response_payload: { type: 'mcq', selected_option_id: '' },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts short_text at the max character limit', () => {
+    const result = SaveResponseRequest.safeParse({
+      ...base,
+      response_payload: { type: 'short_text', text: 'x'.repeat(1000) },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects missing response payload discriminator', () => {
+    const result = SaveResponseRequest.safeParse({
+      ...base,
+      response_payload: { text: '42' },
     });
     expect(result.success).toBe(false);
   });

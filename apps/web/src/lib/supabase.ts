@@ -1,20 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+export const supabasePublishableKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error(
     'Missing Supabase env vars.\n\n' +
-    '1. Run: supabase start\n' +
-    '2. Run: supabase status\n' +
-    '3. Copy API URL + anon key into apps/web/.env.local\n' +
-    '4. Restart dev server (pnpm dev)\n\n' +
+    '1. Create apps/web/.env.local\n' +
+    '2. Set VITE_SUPABASE_URL to your cloud project URL\n' +
+    '3. Set VITE_SUPABASE_PUBLISHABLE_KEY to your cloud publishable key\n' +
+    '4. Restart the dev server (pnpm dev)\n\n' +
     'See apps/web/.env.local.example for template.'
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

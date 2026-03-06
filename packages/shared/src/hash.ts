@@ -1,18 +1,17 @@
+declare const require: (
+  id: 'crypto',
+) => {
+  createHash: (algorithm: 'sha256') => {
+    update: (value: string) => { digest: (encoding: 'hex') => string };
+  };
+};
+
 /**
  * Compute SHA-256 hash of canonicalized JSON (sorted keys, no whitespace).
  * Used for snapshot_hash to guarantee reproducibility.
  */
 export function computeSnapshotHash(data: unknown): string {
   const canonical = canonicalize(data);
-
-  // Node.js / Deno environment
-  if (typeof globalThis.crypto?.subtle !== 'undefined') {
-    // Will be used async — see computeSnapshotHashAsync
-    throw new Error('Use computeSnapshotHashAsync in browser/Deno environments');
-  }
-
-  // Node.js fallback (Edge Functions, server)
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { createHash } = require('crypto');
   return createHash('sha256').update(canonical).digest('hex');
 }
